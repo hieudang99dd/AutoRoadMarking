@@ -1,0 +1,151 @@
+/* ==========================================================================
+   UI 042 · TAB 1 MANAGEMENT TABLE
+   12-column engineering + management view.
+   ========================================================================== */
+.t1-management-table{
+    width:max(100%,1260px)!important;
+    min-width:1260px!important;
+    table-layout:fixed!important;
+}
+.t1-management-table col.t1m-col-check{width:34px}
+.t1-management-table col.t1m-col-code{width:76px}
+.t1-management-table col.t1m-col-layer{width:168px}
+.t1-management-table col.t1m-col-desc{width:170px}
+.t1-management-table col.t1m-col-config{width:126px}
+.t1-management-table col.t1m-col-width{width:58px}
+.t1-management-table col.t1m-col-scale{width:54px}
+.t1-management-table col.t1m-col-rgb{width:92px}
+.t1-management-table col.t1m-col-state{width:102px}
+.t1-management-table col.t1m-col-handle{width:80px}
+.t1-management-table col.t1m-col-preview{width:96px}
+.t1-management-table col.t1m-col-actions{width:204px}
+
+.t1-management-table th,
+.t1-management-table td{
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    box-sizing:border-box!important;
+}
+.t1-management-table tbody tr{
+    height:54px!important;
+}
+.t1-management-table tbody td{
+    height:54px!important;
+    vertical-align:middle!important;
+}
+.t1-management-table th:nth-child(1),
+.t1-management-table td:nth-child(1),
+.t1-management-table th:nth-child(6),
+.t1-management-table td:nth-child(6),
+.t1-management-table th:nth-child(7),
+.t1-management-table td:nth-child(7),
+.t1-management-table th:nth-child(10),
+.t1-management-table td:nth-child(10),
+.t1-management-table th:nth-child(11),
+.t1-management-table td:nth-child(11),
+.t1-management-table th:nth-child(12),
+.t1-management-table td:nth-child(12){
+    text-align:center!important;
+}
+.t1-code-cell{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    min-width:0;
+}
+.t1-code-main{
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+}
+.t1-template-id{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:#71869e;
+    font-size:8px;
+    line-height:1.1;
+}
+.t1-layer-name{
+    color:#9bdcff;
+    font-weight:800;
+}
+.t1-config-cell{
+    display:grid;
+    gap:2px;
+}
+.t1-config-main{
+    color:#eef4fb;
+    font-size:10px;
+    font-weight:800;
+}
+.t1-config-sub{
+    color:#778ca5;
+    font-size:8px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.t1-management-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:82px;
+    min-height:22px;
+    padding:0 7px;
+    border:1px solid;
+    border-radius:999px;
+    font-size:8px;
+    font-weight:900;
+    white-space:nowrap;
+}
+.t1-management-pill.ready{
+    color:#6ee7b7;
+    border-color:rgba(16,185,129,.45);
+    background:rgba(16,185,129,.10);
+}
+.t1-management-pill.dirty,
+.t1-management-pill.new{
+    color:#fcd34d;
+    border-color:rgba(245,158,11,.48);
+    background:rgba(245,158,11,.10);
+}
+.t1-management-pill.error{
+    color:#fca5a5;
+    border-color:rgba(239,68,68,.48);
+    background:rgba(239,68,68,.10);
+}
+.t1-management-meta{
+    display:block;
+    margin-top:3px;
+    color:#71869e;
+    font-size:7.5px;
+    white-space:nowrap;
+}
+.t1-layer-handle.empty{
+    color:#61758d;
+}
+.t1-management-table .arm-layer-preview{
+    height:40px!important;
+}
+.t1-management-table .arm-layer-actions{
+    width:max-content!important;
+    max-width:100%!important;
+    margin:0 auto!important;
+    display:flex!important;
+    gap:5px!important;
+}
+.t1-management-table .arm-layer-action{
+    min-height:28px!important;
+    height:28px!important;
+    padding:0 8px!important;
+    font-size:9px!important;
+}
+.t1-management-table .arm-layer-action.edit{min-width:50px!important}
+.t1-management-table .arm-layer-action.duplicate{min-width:80px!important}
+.t1-management-table .arm-layer-action.delete{min-width:48px!important}
+.t1-library-management-tools{
+    flex-wrap:wrap;
+}

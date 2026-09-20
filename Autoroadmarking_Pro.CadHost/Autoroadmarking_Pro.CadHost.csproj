@@ -1,0 +1,178 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Civil3DVersion Condition="'$(Civil3DVersion)' == ''">2024</Civil3DVersion>
+
+    <IsLegacyCivil Condition="'$(Civil3DVersion)' == '2024'">true</IsLegacyCivil>
+    <IsModernCivil Condition="'$(Civil3DVersion)' == '2025' or '$(Civil3DVersion)' == '2026'">true</IsModernCivil>
+
+    <TargetFramework Condition="'$(IsLegacyCivil)' == 'true'">net48</TargetFramework>
+    <TargetFramework Condition="'$(IsModernCivil)' == 'true'">net8.0-windows</TargetFramework>
+
+    <OutputType>Library</OutputType>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Platforms>x64</Platforms>
+
+    <RootNamespace>Autoroadmarking_Pro.CadHost</RootNamespace>
+    <AssemblyName>Autoroadmarking_Pro.CadHost.C3D$(Civil3DVersion)</AssemblyName>
+
+    <OutputPath>bin\$(Configuration)\C3D$(Civil3DVersion)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Civil3DVersion)' == '2024'">
+    <AutoCadRoot Condition="'$(AutoCadRoot)' == ''">C:\Program Files\Autodesk\AutoCAD 2024</AutoCadRoot>
+    <Civil3DRoot Condition="'$(Civil3DRoot)' == ''">$(AutoCadRoot)\C3D</Civil3DRoot>
+    <AutoCadSeries>R24.3</AutoCadSeries>
+    <DefineConstants>$(DefineConstants);C3D2024;C3D_LEGACY</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Civil3DVersion)' == '2025'">
+    <AutoCadRoot Condition="'$(AutoCadRoot)' == ''">C:\Program Files\Autodesk\AutoCAD 2025</AutoCadRoot>
+    <Civil3DRoot Condition="'$(Civil3DRoot)' == ''">$(AutoCadRoot)\C3D</Civil3DRoot>
+    <AutoCadSeries>R25.0</AutoCadSeries>
+    <DefineConstants>$(DefineConstants);C3D2025;C3D_MODERN</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Civil3DVersion)' == '2026'">
+    <AutoCadRoot Condition="'$(AutoCadRoot)' == ''">C:\Program Files\Autodesk\AutoCAD 2026</AutoCadRoot>
+    <Civil3DRoot Condition="'$(Civil3DRoot)' == ''">$(AutoCadRoot)\C3D</Civil3DRoot>
+    <AutoCadSeries>R25.1</AutoCadSeries>
+    <DefineConstants>$(DefineConstants);C3D2026;C3D_MODERN</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Remove="App.xaml" />
+    <Compile Remove="App.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Autoroadmarking_Pro.Domain\Autoroadmarking_Pro.Domain.csproj" />
+    <ProjectReference Include="..\Autoroadmarking_Pro.Application\Autoroadmarking_Pro.Application.csproj" />
+    <ProjectReference Include="..\Autoroadmarking_Pro.Infrastructure\Autoroadmarking_Pro.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2"
+                      Version="1.0.4129.50" />
+
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48"
+                      Version="1.0.3"
+                      PrivateAssets="all"
+                      Condition="'$(TargetFramework)' == 'net48'" />
+
+    <PackageReference Include="System.Text.Json"
+                      Version="8.0.5"
+                      Condition="'$(TargetFramework)' == 'net48'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AcCoreMgd">
+      <HintPath>$(AutoCadRoot)\AcCoreMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="AcDbMgd">
+      <HintPath>$(AutoCadRoot)\AcDbMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="AcMgd">
+      <HintPath>$(AutoCadRoot)\AcMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AecBaseMgd">
+      <HintPath>$(AutoCadRoot)\AecBaseMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="AeccDbMgd">
+      <HintPath>$(Civil3DRoot)\AeccDbMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+
+  <!-- .NET Framework 4.8: ZipArchive / XLSX exporter -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="UI\web\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+
+    <EmbeddedResource Include="UI\web\**\*.*">
+      <LogicalName>ARM_WEB/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Target Name="CopyAutoRoadMarkingWebUi"
+          AfterTargets="Build">
+    <ItemGroup>
+      <_ArmWebFiles Include="$(MSBuildProjectDirectory)\UI\web\**\*.*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(_ArmWebFiles)"
+      DestinationFiles="@(_ArmWebFiles->'$(TargetDir)UI\web\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="ValidateCivil3DVersion"
+          BeforeTargets="ResolveReferences">
+
+    <Error
+      Condition="'$(Civil3DVersion)' != '2024'
+              and '$(Civil3DVersion)' != '2025'
+              and '$(Civil3DVersion)' != '2026'"
+      Text="Civil3DVersion chỉ hỗ trợ 2024, 2025 hoặc 2026." />
+
+    <Error
+      Condition="!Exists('$(AutoCadRoot)\AcCoreMgd.dll')"
+      Text="Không tìm thấy AcCoreMgd.dll tại: $(AutoCadRoot)" />
+
+    <Error
+      Condition="!Exists('$(AutoCadRoot)\AcDbMgd.dll')"
+      Text="Không tìm thấy AcDbMgd.dll tại: $(AutoCadRoot)" />
+
+    <Error
+      Condition="!Exists('$(AutoCadRoot)\AcMgd.dll')"
+      Text="Không tìm thấy AcMgd.dll tại: $(AutoCadRoot)" />
+
+    <Error
+      Condition="!Exists('$(Civil3DRoot)\AeccDbMgd.dll')"
+      Text="Không tìm thấy AeccDbMgd.dll tại: $(Civil3DRoot)" />
+
+    <Error
+      Condition="!Exists('..\Autoroadmarking_Pro.Domain\Autoroadmarking_Pro.Domain.csproj')"
+      Text="Không tìm thấy Domain project: ..\Autoroadmarking_Pro.Domain\Autoroadmarking_Pro.Domain.csproj" />
+
+    <Error
+      Condition="!Exists('..\Autoroadmarking_Pro.Application\Autoroadmarking_Pro.Application.csproj')"
+      Text="Không tìm thấy Application project." />
+
+    <Error
+      Condition="!Exists('..\Autoroadmarking_Pro.Infrastructure\Autoroadmarking_Pro.Infrastructure.csproj')"
+      Text="Không tìm thấy Infrastructure project." />
+
+  </Target>
+
+</Project>

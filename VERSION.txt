@@ -1,0 +1,14 @@
+AutoRoadMarking Pro · FINAL SOURCE 2026.08.21
+Finalized UI: modular WebView2 UI (locked/refined baseline)
+Backend State Schema: 11
+Supported Civil 3D: 2024 / 2025 / 2026
+Package: Complete Source + Static QA
+
+Key finalized workflows:
+- Tab 1: CẬP NHẬT THƯ VIỆN / ÁP DỤNG VÀ ĐỒNG BỘ.
+- Tab 2: ĐỒNG BỘ MẶT CẮT ĐÃ CHỌN persists the active MCN set used by Tab 3/4.
+- CUSTOM_REAL: real CAD linetype generation; geometry-driven 7.3/GGT use generated geometry.
+- 1.3: single managed template, double-line presentation/generation.
+- 7.3: zebra crosswalk generator (default stripe 0.40 m, gap 0.60 m, crossing width >= 3.0 m).
+- GGT: final speed-hump code; legacy GTT is migrated.
+- Tab 6: CAD geometry/ARM metadata are the quantity source of truth.

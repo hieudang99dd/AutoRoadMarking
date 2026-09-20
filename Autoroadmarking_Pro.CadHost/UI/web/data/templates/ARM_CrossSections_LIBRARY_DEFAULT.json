@@ -1,0 +1,647 @@
+{
+  "version": 2,
+  "libraryName": "AutoRoadMarking Pro · Tab 2 Cross Section Library",
+  "note": "Mẫu đầu tiên sao chép cấu trúc Assembly 1 người dùng đã tạo thủ công. Các mẫu còn lại là template khởi tạo để chỉnh sửa, không tự khẳng định cấp đường/quy chuẩn.",
+  "templateRefs": {
+    "centerOrLaneReference": "QCVN41_1_1",
+    "edgeReference": "QCVN41_3_1A"
+  },
+  "crossSections": [
+    {
+      "Id": "ARM_MCN_USER_2L_8M00",
+      "Name": "MCN mẫu người dùng · 2 làn · W=8.00 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Phần rộng ngoài phải",
+          "Width": 0.25,
+          "OccupiesWidth": true,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P008",
+          "Order": 8,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P009",
+          "Order": 9,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Phần rộng ngoài trái",
+          "Width": 0.25,
+          "OccupiesWidth": true,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    },
+    {
+      "Id": "ARM_MCN_2L_3P50",
+      "Name": "MCN 2 làn · 3.50 m/làn · W=7.00 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    },
+    {
+      "Id": "ARM_MCN_2L_3P75",
+      "Name": "MCN 2 làn · 3.75 m/làn · W=7.50 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 1",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 1",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    },
+    {
+      "Id": "ARM_MCN_4L_3P50",
+      "Name": "MCN 4 làn · 3.50 m/làn · W=14.00 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch phân làn phải 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 2",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P008",
+          "Order": 8,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P009",
+          "Order": 9,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch phân làn trái 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P010",
+          "Order": 10,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 2",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P011",
+          "Order": 11,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    },
+    {
+      "Id": "ARM_MCN_4L_3P75",
+      "Name": "MCN 4 làn · 3.75 m/làn · W=15.00 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 1",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch phân làn phải 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 2",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P008",
+          "Order": 8,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 1",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P009",
+          "Order": 9,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch phân làn trái 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P010",
+          "Order": 10,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 2",
+          "Width": 3.75,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P011",
+          "Order": 11,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    },
+    {
+      "Id": "ARM_MCN_6L_3P50",
+      "Name": "MCN 6 làn · 3.50 m/làn · W=21.00 m",
+      "Components": [
+        {
+          "Id": "P001",
+          "Order": 1,
+          "Side": "Center",
+          "Role": "Centerline",
+          "Name": "Tim tuyến",
+          "Width": 0.0,
+          "OccupiesWidth": false,
+          "Template": ""
+        },
+        {
+          "Id": "P002",
+          "Order": 2,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch tim phải 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P003",
+          "Order": 3,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P004",
+          "Order": 4,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch phân làn phải 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P005",
+          "Order": 5,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 2",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P006",
+          "Order": 6,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch phân làn phải 2",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P007",
+          "Order": 7,
+          "Side": "Right",
+          "Role": "Lane",
+          "Name": "Làn xe phải 3",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P008",
+          "Order": 8,
+          "Side": "Right",
+          "Role": "Marking",
+          "Name": "Vạch biên phải 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        },
+        {
+          "Id": "P009",
+          "Order": 9,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch tim trái 1.1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P010",
+          "Order": 10,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 1",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P011",
+          "Order": 11,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch phân làn trái 1",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P012",
+          "Order": 12,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 2",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P013",
+          "Order": 13,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch phân làn trái 2",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_1_1"
+        },
+        {
+          "Id": "P014",
+          "Order": 14,
+          "Side": "Left",
+          "Role": "Lane",
+          "Name": "Làn xe trái 3",
+          "Width": 3.5,
+          "OccupiesWidth": true,
+          "Template": ""
+        },
+        {
+          "Id": "P015",
+          "Order": 15,
+          "Side": "Left",
+          "Role": "Marking",
+          "Name": "Vạch biên trái 1.3A",
+          "Width": 0.15,
+          "OccupiesWidth": false,
+          "Template": "QCVN41_3_1A"
+        }
+      ]
+    }
+  ]
+}

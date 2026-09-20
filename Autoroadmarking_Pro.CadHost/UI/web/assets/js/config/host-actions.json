@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "source": "AutoRoadMarking_UI_FINAL_LOCKED_V2_REFINED.html",
+  "actions": [
+    "Cancel_Cad_Interaction",
+    "Refresh_Pipeline_Status",
+    "Step1_PhanTichGhepCap",
+    "Step1_VeVachDocTuyen",
+    "Step1_ZoomKetQuaCanXuLy",
+    "Step2_CapNhatDaGiacNut",
+    "Step2_CatVachTrongDaGiac",
+    "Step2_VeDaGiacNut",
+    "Step3_VeVachMep",
+    "Step4_VeVachDungDiBo",
+    "Tab1_ApplySharedLayerSet",
+    "Tab1_DeleteLayer",
+    "Tab1_DeleteSelectedLayers",
+    "Tab1_DuplicateLayer",
+    "Tab1_EditLayer",
+    "Tab1_UpdateLayerManagementSet",
+    "Tab5_AdoptExistingMarking",
+    "Tab5_AssignLayerToSelected",
+    "Tab5_CheckSelectedBlocks",
+    "Tab5_GenerateOrUpdate",
+    "Tab5_PickBoundary1",
+    "Tab5_PickBoundary2",
+    "Tab5_PickClusterAnchor",
+    "Tab5_PickClusterDirection",
+    "Tab5_PickEnd",
+    "Tab5_PickStart",
+    "Tab5_Preview",
+    "Tab5_RefreshContext",
+    "Tab5_RegisterQuickLayerTemplate",
+    "Tab5_SelectExistingBlocks",
+    "Tab5_SyncExistingBlockProperties",
+    "Tab5_ZoomRoad"
+  ],
+  "specialContracts": {
+    "Tab1_ApplySharedLayerSet": {
+      "requestGetter": "getTab1SharedLayerDeploymentRequest",
+      "resultCallback": "onTab1SharedLayerSetApplied"
+    },
+    "Tab1_UpdateLayerManagementSet": {
+      "contractGetter": "getTab1LayerDataContract",
+      "stateCallback": "setTab1ManagementSetState"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+<Window x:Class="Autoroadmarking_Pro.CadHost.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AutoRoadMarking Pro"
+        Width="1280"
+        Height="850"
+        MinWidth="900"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F1720">
+
+    <!-- WebView2 được tạo bằng C#.
+         Không đặt WebView2 trực tiếp trong XAML để tránh lỗi XAML Designer
+         khi designer không resolve được Microsoft.Web.WebView2.Wpf.dll. -->
+    <Grid x:Name="WebViewContainer"
+          Background="#0F1720" />
+
+</Window>

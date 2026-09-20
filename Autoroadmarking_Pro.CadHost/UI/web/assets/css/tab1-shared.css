@@ -1,0 +1,9 @@
+#t1SharedLayerStatus{
+    min-width:118px;
+    justify-content:center;
+    flex:0 0 auto;
+}
+@media(max-width:900px){
+    .t1-apply-sync{flex:1 1 100%!important}
+    #t1SharedLayerStatus{flex:1 1 auto}
+}

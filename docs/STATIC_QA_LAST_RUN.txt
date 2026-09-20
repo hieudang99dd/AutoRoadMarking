@@ -1,0 +1,15 @@
+AutoRoadMarking Pro FINAL SOURCE
+Static QA run: 2026-08-21 (package finalization)
+
+STATIC QA: PASS
+ - C# files: 104
+ - HTML ids: 360 (unique)
+ - Modular JS files: 8
+ - WebView post actions: 51 (all handled)
+ - goiAction aliases: 27 (all mapped)
+ - Node syntax check: pass
+ - Tab 1: typed pattern/reference separated from project metadata
+ - Tab 1: reserved metadata keys validated by backend policy + bundled CSV
+ - 7.1↔7.3: configurable, no hard maximum 3 m
+ - DWG state schema: 11
+ - build/cache directories: none

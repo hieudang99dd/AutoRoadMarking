@@ -1,0 +1,163 @@
+/* AutoRoadMarking Pro · Tab 2 final responsive patch
+   Purpose: keep the TIM axis centered, keep the editor resizable, and avoid
+   legacy width locks from older global CSS patches. */
+
+.tab-body.arm-split-grid{
+    grid-template-columns:var(--arm-split-left,460px) 5px minmax(0,1fr)!important;
+    gap:5px!important;
+    min-width:0;
+    overflow:hidden;
+}
+.col-left,
+.col-right,
+.panel{
+    min-width:0;
+}
+.col-left{
+    overflow:auto;
+}
+.col-right{
+    overflow:hidden;
+}
+
+/* The component table follows the editor width instead of forcing ~510px. */
+.t2-parts-table,
+.col-left table{
+    width:100%!important;
+    min-width:0!important;
+    table-layout:fixed;
+}
+.t2-col-no{width:30px!important}
+.t2-col-side{width:64px!important}
+.t2-col-part{width:auto!important}
+.t2-col-width{width:78px!important}
+.t2-col-move{width:54px!important}
+.t2-col-delete{width:54px!important}
+.t2-parts-table th,
+.t2-parts-table td{
+    padding-left:6px!important;
+    padding-right:6px!important;
+}
+.t2-parts-table .t2-col-part,
+.t2-parts-table td:nth-child(3){
+    width:150px!important;
+    max-width:150px!important;
+}
+.t2-part-main,
+.t2-part-sub{
+    display:block;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.t2-part-sub{
+    margin-top:2px;
+}
+.t2-table-action{
+    min-width:42px;
+    padding:4px 6px!important;
+    font-size:11px!important;
+}
+.card-matcat{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+}
+.card-matcat-main{
+    min-width:0;
+    flex:1 1 210px;
+}
+.card-matcat-main strong{
+    display:block;
+}
+.card-matcat-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+.t2-card-check{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    margin-right:2px;
+    white-space:nowrap;
+}
+.t2-card-btn{
+    min-width:auto!important;
+    padding:6px 10px!important;
+    white-space:nowrap;
+}
+.t2-width-editor{
+    width:100%!important;
+    min-width:0!important;
+    height:28px!important;
+    min-height:28px!important;
+    box-sizing:border-box;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+}
+.t2-width-editor:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+/* Preview owns all available horizontal space. Its backing resolution is set by JS. */
+.t2-preview-panel{
+    flex:0 0 auto!important;
+    width:100%;
+    min-width:0;
+    min-height:300px!important;
+    padding-bottom:10px;
+    overflow:hidden;
+}
+#crossSectionCanvas{
+    display:block;
+    width:100%!important;
+    max-width:none!important;
+    height:clamp(245px,31vh,340px)!important;
+    min-height:245px;
+    box-sizing:border-box;
+}
+.t2-preview-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+/* Library footer can grow without squeezing the sync button. */
++ .action-footer,
+.action-footer{
+    flex-wrap:wrap;
+}
+
+@media (max-width:1100px){
+    .tab-body.arm-split-grid{
+        grid-template-columns:minmax(360px,44%) minmax(0,1fr)!important;
+        gap:8px!important;
+        overflow:auto;
+    }
+    .tab-body.arm-split-grid>.arm-splitter{display:none!important}
+}
+@media (max-width:760px){
+    .tab-body.arm-split-grid{
+        grid-template-columns:1fr!important;
+    }
+    #crossSectionCanvas{
+        height:260px!important;
+    }
+}
+@media (max-width:760px){
+    .t2-parts-table .t2-col-part,
+    .t2-parts-table td:nth-child(3){
+        width:130px!important;
+        max-width:130px!important;
+    }
+    .card-matcat-actions{
+        width:100%;
+        justify-content:flex-start;
+    }
+}

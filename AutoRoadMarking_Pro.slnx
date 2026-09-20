@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="Autoroadmarking_Pro.Application/Autoroadmarking_Pro.Application.csproj">
+    <Platform Solution="Debug|x64" Project="x64" />
+  </Project>
+  <Project Path="Autoroadmarking_Pro.CadHost/Autoroadmarking_Pro.CadHost.csproj">
+    <Platform Solution="Debug|x64" Project="x64" />
+  </Project>
+  <Project Path="Autoroadmarking_Pro.Domain/Autoroadmarking_Pro.Domain.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="Autoroadmarking_Pro.Infrastructure/Autoroadmarking_Pro.Infrastructure.csproj">
+    <Platform Solution="Debug|x64" Project="x64" />
+  </Project>
+</Solution>

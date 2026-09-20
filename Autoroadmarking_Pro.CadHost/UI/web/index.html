@@ -1,0 +1,1333 @@
+<!-- AutoRoadMarking UI FINAL LOCKED V2 MODULAR · separated HTML/CSS/JS · standalone preview -->
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Auto Road Marking - Civil 3D</title>
+<link href="data:image/x-icon;," rel="shortcut icon" type="image/x-icon"/>
+<link rel="stylesheet" href="./assets/css/foundation.css"/>
+<link rel="stylesheet" href="./assets/css/design-system.css"/>
+<link rel="stylesheet" href="./assets/css/module-normalization.css"/>
+<link rel="stylesheet" href="./assets/css/engineering-workflows.css"/>
+<link rel="stylesheet" href="./assets/css/tab1-management.css"/>
+<link rel="stylesheet" href="./assets/css/tab1-shared.css"/>
+<link rel="stylesheet" href="./assets/css/tab2.css"/>
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="app-shell">
+<header class="app-bar">
+<div class="brand">
+<div class="brand-mark">AR</div>
+<div>
+<div class="brand-title">AUTO ROAD MARKING · CIVIL 3D</div>
+<div class="brand-sub" id="activeWorkflowBreadcrumb" aria-live="polite">BƯỚC 2/7 · 1. VẠCH SƠN</div>
+</div>
+</div>
+<div class="app-meta">
+<span class="chip arm-debug-chip">Đơn vị <strong>m</strong></span>
+<button class="arm-density-btn" id="armDensityBtn" onclick="window.toggleArmDensity()" type="button">THOẢI MÁI</button>
+<span class="status-pill status-wait" id="uiCadStatus">Chờ CAD</span>
+</div>
+</header>
+<nav aria-label="Các mô-đun AutoRoadMarking" class="tab-header" role="tablist">
+<button aria-controls="tabDinhDanhTuyen" aria-selected="false" class="tab-btn" data-tab="tabDinhDanhTuyen" id="tabBtnDinhDanhTuyen" onclick="window.openTab(event,'tabDinhDanhTuyen')" role="tab" tabindex="-1">0. ĐỊNH DANH</button>
+<button aria-controls="tabLayer" aria-selected="true" class="tab-btn active" data-tab="tabLayer" id="tabBtnLayer" onclick="window.openTab(event,'tabLayer')" role="tab" tabindex="0">1. VẠCH SƠN</button>
+<button aria-controls="tabThietKe" aria-selected="false" class="tab-btn" data-tab="tabThietKe" id="tabBtnThietKe" onclick="window.openTab(event,'tabThietKe')" role="tab" tabindex="-1">2. MẶT CẮT</button>
+<button aria-controls="tabVach2D" aria-selected="false" class="tab-btn" data-tab="tabVach2D" id="tabBtnVach2D" onclick="window.openTab(event,'tabVach2D')" role="tab" tabindex="-1">3. SINH VẠCH</button>
+<button aria-controls="tabKyHieuBlock" aria-selected="false" class="tab-btn" data-tab="tabKyHieuBlock" id="tabBtnKyHieuBlock" onclick="window.openTab(event,'tabKyHieuBlock')" role="tab" tabindex="-1">4. VẠCH 7.6/9.3</button>
+<button aria-controls="tabPhatSinh" aria-selected="false" class="tab-btn" data-tab="tabPhatSinh" id="tabBtnPhatSinh" onclick="window.openTab(event,'tabPhatSinh')" role="tab" tabindex="-1">5. PHÁT SINH</button>
+<button aria-controls="tabKhoiLuong" aria-selected="false" class="tab-btn" data-tab="tabKhoiLuong" id="tabBtnKhoiLuong" onclick="window.openTab(event,'tabKhoiLuong')" role="tab" tabindex="-1">6. KHỐI LƯỢNG</button>
+</nav>
+<div class="arm-cad-interaction" hidden="" id="armCadInteraction">
+<div class="arm-cad-pulse"></div>
+<div><strong id="armCadInteractionTitle">ĐANG CHỜ THAO TÁC TRÊN CAD</strong><span id="armCadInteractionDetail">Chọn đối tượng trên mặt bằng · ESC để hủy</span></div>
+<button class="btn-outline" onclick="window.cancelArmCadInteraction()" type="button">HỦY</button>
+</div>
+<div class="arm-progress" hidden="" id="armProgress">
+<div class="arm-progress-copy"><strong id="armProgressTitle">ĐANG XỬ LÝ</strong><span id="armProgressDetail">Vui lòng chờ...</span></div>
+<div class="arm-progress-track"><i id="armProgressBar"></i></div>
+<strong class="arm-progress-value" id="armProgressValue">0%</strong>
+</div>
+<main class="tab-content-container">
+<!-- TAB 0 -->
+<section aria-hidden="true" aria-labelledby="tabBtnDinhDanhTuyen" class="tab-content" id="tabDinhDanhTuyen" role="tabpanel">
+<div class="t0-shell">
+<header class="t0-top">
+<div>
+<div class="section-kicker">TAB 0 · ĐỊNH DANH TIM TUYẾN CAD</div>
+<div class="t0-title">Khôi phục &amp; định danh TIM tuyến từ CAD</div>
+</div>
+<div class="t0-top-actions">
+<span class="status-pill status-wait" id="t0CadStatus">Chưa đọc CAD</span>
+<button class="btn-primary" onclick="window.scanCadAxisIdentities()">QUÉT TỪ CAD</button>
+</div>
+</header>
+<section class="t0-summary">
+<article>
+<span>TIM nhận lại từ CAD</span>
+<strong id="t0NamedCount">0</strong>
+<small>ARM metadata trong DWG</small>
+</article>
+<article>
+<span>Tổng chiều dài</span>
+<strong id="t0NamedLength">0.00 m</strong>
+<small>Các TIM đã định danh</small>
+</article>
+<article class="accent">
+<span>Đang đồng bộ</span>
+<strong id="t0ActiveRoadName">—</strong>
+<small id="t0SyncStateText">Chưa chọn tuyến dùng tiếp</small>
+</article>
+</section>
+<section class="t0-work">
+<aside class="t0-form-panel">
+<header class="t0-panel-head">
+<div>
+<strong>CHỌN TIM MỚI HOẶC TIM ĐÃ CÓ ĐỊNH DANH</strong>
+</div>
+</header>
+<div class="t0-form-body">
+<div class="t0-step">
+<span class="t0-step-no">1</span>
+<div>
+<strong>Chọn Polyline TIM trên CAD</strong>
+<small>Nếu đối tượng đã có ARM metadata, hệ thống tự nhận lại dữ liệu cũ.</small>
+</div>
+</div>
+<button class="btn-primary btn-full" id="t0PickBtn" onclick="window.selectCadAxisForNaming()">CHỌN POLYLINE TIM TRÊN CAD</button>
+<div class="t0-selected" data-empty="true" id="t0SelectedCard">
+<div class="t0-selected-empty" id="t0SelectedEmpty">Chưa chọn Polyline.</div>
+<div class="t0-selected-data" id="t0SelectedData">
+<div><span>Đối tượng</span><strong id="t0SelType">-</strong></div>
+<div><span>Handle</span><strong id="t0SelHandle">-</strong></div>
+<div><span>Layer hiện tại</span><strong id="t0SelLayer">-</strong></div>
+<div><span>Chiều dài</span><strong id="t0SelLength">-</strong></div>
+<div class="t0-selected-identity"><span>ARM Identity</span><strong id="t0SelIdentityState">CHƯA CÓ</strong></div>
+</div>
+</div>
+<div class="t0-step">
+<span class="t0-step-no">2</span>
+<div>
+<strong>Nhập tên tuyến</strong>
+</div>
+</div>
+<div class="form-col">
+<label class="required">Tên tuyến</label>
+<input id="t0RoadName" maxlength="120" oninput="window.previewCadAxisName()" placeholder="Ví dụ: QL1A" type="text"/>
+</div>
+<div class="t0-preview">
+<span>Layer TIM sau khi gắn / cập nhật</span>
+<strong id="t0LayerPreview">-</strong>
+</div>
+
+</div>
+<footer class="t0-form-actions">
+<button class="btn-outline" onclick="window.clearCadAxisSelection()">BỎ CHỌN</button>
+<button class="btn-primary" disabled="" id="t0AssignBtn" onclick="window.assignCadAxisName()">GẮN TÊN TUYẾN</button>
+</footer>
+</aside>
+<section class="t0-list-panel">
+<header class="t0-list-head">
+<div>
+<strong>TIM ĐÃ NHẬN LẠI TỪ CAD</strong>
+<small id="t0ListMeta">Chưa quét DWG</small>
+</div>
+<div class="t0-search">
+<input id="t0Search" oninput="window.filterCadAxisIdentities()" placeholder="Tìm tên tuyến, layer hoặc handle..." type="text"/>
+</div>
+</header>
+<div class="t0-table-wrap">
+<table class="arm-colgroup-table t0-table">
+<colgroup><col style="width:44px"/><col style="width:180px"/><col style="width:90px"/><col style="width:90px"/><col style="width:160px"/><col style="width:100px"/><col style="width:250px"/></colgroup>
+<thead>
+<tr>
+<th class="t0-no">#</th>
+<th>Tên tuyến</th>
+<th>Loại</th>
+<th>Handle</th>
+<th>Layer tim CAD</th>
+<th class="t0-num">Chiều dài</th>
+<th class="t0-actions-col" data-no-sort="true">Thao tác</th>
+</tr>
+</thead>
+<tbody id="t0AxisBody">
+<tr class="t0-empty-row"><td colspan="7">Chưa có tim CAD được định danh.</td></tr>
+</tbody>
+</table>
+</div>
+<footer class="t0-list-footer">
+<div>
+<strong id="t0VisibleCount">0 đối tượng</strong>
+</div>
+</footer>
+</section>
+</section>
+</div>
+</section>
+<!-- TAB 1 -->
+<section aria-hidden="false" aria-labelledby="tabBtnLayer" class="tab-content active" id="tabLayer" role="tabpanel">
+<div class="tab-body">
+<aside class="col-left">
+<div>
+<div class="section-kicker">TAB 1 · TẠO LAYER THỦ CÔNG</div>
+<div class="section-heading">Khai báo layer</div>
+</div>
+<div class="sub-title">1. Tên layer</div>
+<div class="layer-name-group">
+<input id="t1_PrefixSTT" readonly="" title="Số thứ tự tự động tăng" type="text" value="_1."/>
+<input id="t1_PrefixFixed" readonly="" title="Nhóm layer cố định" type="text" value="VS_MARKING."/>
+<input id="t1_LayerSuffix" placeholder="VD: 1.1" title="Mã vạch cụ thể" type="text"/>
+</div>
+<div class="sub-title">2. Thuộc tính layer</div>
+<div class="form-col">
+<label class="required">Kiểu nét</label>
+<select id="t1_KieuNet" onchange="window.toggleCustomLineTypeFields();window.vePreviewLayerTab1()">
+<option value="CONTINUOUS">Continuous</option>
+<option value="DASHED">Dashed</option>
+<option value="DASHEDX2">Dashed X2</option>
+<option value="HIDDEN">Hidden</option>
+<option value="CUSTOM_REAL">Custom · Kích thước thật</option>
+</select>
+<div class="t1-custom-real" hidden="" id="t1CustomRealFields">
+<div class="t1-custom-real-head">
+<strong>CUSTOM · KÍCH THƯỚC THẬT</strong>
+</div>
+<div class="t1-custom-real-grid">
+<div class="form-col">
+<label>Nét 1 (m)</label>
+<input id="t1_CustomDash1" min="0.001" oninput="window.updateCustomRealCycle();window.vePreviewLayerTab1()" step="0.01" type="number" value="3.00"/>
+</div>
+<div class="form-col">
+<label>Khoảng 1 (m)</label>
+<input id="t1_CustomGap1" min="0" oninput="window.updateCustomRealCycle();window.vePreviewLayerTab1()" step="0.01" type="number" value="6.00"/>
+</div>
+<div class="form-col">
+<label>Nét 2 (m) · tùy chọn</label>
+<input id="t1_CustomDash2" min="0" oninput="window.updateCustomRealCycle();window.vePreviewLayerTab1()" step="0.01" type="number" value="0"/>
+</div>
+<div class="form-col">
+<label>Khoảng 2 (m) · tùy chọn</label>
+<input id="t1_CustomGap2" min="0" oninput="window.updateCustomRealCycle();window.vePreviewLayerTab1()" step="0.01" type="number" value="0"/>
+</div>
+<div class="form-col">
+<label>Pha bắt đầu (m)</label>
+<input id="t1_CustomPhase" min="0" oninput="window.vePreviewLayerTab1()" step="0.01" type="number" value="0"/>
+</div>
+<div class="form-col">
+<label>Chu kỳ thực (m)</label>
+<input id="t1_CustomCycle" readonly="" type="number" value="9.00"/>
+</div>
+</div>
+<div class="helper" id="t1CustomPaintRatio">Tỷ lệ sơn tự tính theo chu kỳ: 33%</div>
+</div>
+</div>
+<div class="form-grid-2">
+<div class="form-col">
+<label class="required">Tỷ lệ nét</label>
+<input id="t1_Scale" min="0.01" onchange="window.vePreviewLayerTab1()" step="0.1" type="number" value="1.0"/>
+</div>
+<div class="form-col">
+<label class="required">Bề rộng (m)</label>
+<input id="t1_Width" min="0" onchange="window.vePreviewLayerTab1()" step="0.01" type="number" value="0.15"/>
+</div>
+</div>
+<div class="form-col">
+<label class="required">Màu vạch (RGB)</label>
+<div class="color-group">
+<input id="t1_ColorHex" onchange="window.syncColorToRGB();window.vePreviewLayerTab1()" type="color" value="#ffffff"/>
+<input id="t1_ColorRGB" oninput="window.syncRGBToHex()" placeholder="255, 255, 255" type="text" value="255, 255, 255"/>
+</div>
+</div>
+<div class="form-col">
+<label>Preview</label>
+<canvas height="32" id="previewSingleLayer" style="height:32px" width="320"></canvas>
+</div>
+<div class="t1-custom-real" hidden="" id="t1StandardPatternFields">
+<div class="t1-custom-real-grid">
+<div class="form-col"><label>Chiều dài nét (m)</label><input id="t1_DashLength" min="0.001" step="0.1" type="number" value="3.0"/></div>
+<div class="form-col"><label>Khoảng trống (m)</label><input id="t1_GapLength" min="0" step="0.1" type="number" value="6.0"/></div>
+</div>
+</div>
+<input id="t1_StandardRef" type="hidden" value="QCVN 41:2024/BGTVT"/>
+<input id="t1_StandardClause" type="hidden" value=""/>
+<textarea hidden="" id="t1_CustomProperties">{}</textarea>
+<div class="sub-title">3. Mô tả</div>
+<div class="form-col">
+<label class="required">Mô tả chi tiết</label>
+<input id="t1_MoTa" placeholder="Ví dụ: Vạch tim đường 1.1" type="text"/>
+</div>
+<button class="btn-info btn-full" id="btnSubmitLayer" onclick="window.themLayerThuCong()">+ THÊM LAYER VÀO THƯ VIỆN</button>
+<button class="btn-outline btn-full" hidden id="btnCancelLayerEdit" onclick="window.cancelTab1LayerEdit()" type="button">HỦY SỬA</button>
+</aside>
+<section class="panel">
+<div class="flex-header">
+<div>
+<div class="section-kicker">THƯ VIỆN</div>
+<h3 class="section-title" style="margin:2px 0 0">DANH SÁCH LAYER (<span id="lblTotalLayers">0</span>)</h3>
+</div>
+<div class="arm-memory-library-head">
+<span class="status-pill status-ready">LƯU TRONG DWG</span>
+<small>Mở lại đúng DWG vẫn giữ thư viện đã tạo/nhập</small>
+</div>
+<div class="t1-library-management-tools">
+<button class="btn-warning t1-update-library" id="btnUpdateLayerSet" onclick="window.updateTab1ManagementSet()" type="button" title="Cập nhật và chuẩn hóa thư viện Layer, gồm metadata quản lý cấp template">CẬP NHẬT THƯ VIỆN</button>
+<span class="status-pill status-wait" id="t1ManagementSetStatus" title="Trạng thái metadata quản lý khối lượng">CHƯA CẬP NHẬT</span>
+</div>
+<input id="t1_Search" onkeyup="window.renderLayerManager()" placeholder="Tìm mã / layer / mô tả..." style="width:220px" type="text"/>
+</div>
+<div class="t1-library-contract-note">
+<strong>NGUỒN DỮ LIỆU:</strong> Tab 1 không tự nạp danh sách mẫu. Bạn có thể <b>TẠO LAYER THỦ CÔNG</b> ở khung bên trái hoặc chủ động <b>NẠP CSV THƯ VIỆN</b>. Sau đó dùng <b>CẬP NHẬT THƯ VIỆN</b> để chuẩn hóa metadata và <b>ÁP DỤNG VÀ ĐỒNG BỘ</b> để tạo/cập nhật Layer trong CAD, đồng thời phân phối cùng dữ liệu sang các Tab 2/3/4/5/6.
+</div>
+<div class="table-wrapper">
+<table class="arm-colgroup-table t1-layer-table t1-management-table">
+<colgroup>
+<col class="t1m-col-check"/>
+<col class="t1m-col-code"/>
+<col class="t1m-col-layer"/>
+<col class="t1m-col-desc"/>
+<col class="t1m-col-config"/>
+<col class="t1m-col-width"/>
+<col class="t1m-col-scale"/>
+<col class="t1m-col-rgb"/>
+<col class="t1m-col-state"/>
+<col class="t1m-col-handle"/>
+<col class="t1m-col-preview"/>
+<col class="t1m-col-actions"/>
+</colgroup>
+<thead>
+<tr>
+<th class="arm-cell-check" data-no-sort="true"><label class="custom-checkbox"><input id="cbxSelectAllLayers" onclick="window.toggleSelectAllLayers(this)" type="checkbox"/><span class="checkmark"></span></label></th>
+<th>Mã vạch</th>
+<th>Tên layer</th>
+<th>Mô tả</th>
+<th>Cấu hình nét</th>
+<th>Rộng</th>
+<th>Scale</th>
+<th>Màu RGB</th>
+<th>Bộ QL</th>
+<th>Handle Layer</th>
+<th class="arm-preview-cell" data-no-sort="true">Preview</th>
+<th class="arm-cell-action" data-no-sort="true">Thao tác</th>
+</tr>
+</thead>
+<tbody id="layerBody"></tbody>
+</table>
+</div>
+</section>
+</div>
+<footer class="action-footer">
+<button class="btn-success t1-apply-sync" id="btnSyncLayer" onclick="window.apDungBoLayerDaChon()" style="flex:1 1 320px" title="Áp dụng các Layer đã chọn vào CAD và đồng bộ cùng dữ liệu sang các Tab sử dụng">ÁP DỤNG VÀ ĐỒNG BỘ</button>
+<span class="status-pill status-wait" id="t1SharedLayerStatus" title="Trạng thái áp dụng bộ layer dùng chung">CHƯA ĐỒNG BỘ</span>
+<input accept=".csv,text/csv" hidden="" id="csvFileInput" type="file"/>
+<button class="btn-outline" id="btnLoadBundledCsv" onclick="window.napThuVienCsvMacDinh()" title="Nạp file CSV thư viện chuẩn đi kèm plugin">NẠP CSV THƯ VIỆN</button>
+<button class="btn-outline" onclick="document.getElementById('csvFileInput').click()" title="Chọn một file CSV khác từ máy">NHẬP CSV KHÁC...</button>
+<button class="btn-outline" id="btnExportCSV" onclick="window.xuatCSV()">XUẤT CSV</button>
+<button class="btn-danger" id="btnDeleteSelectedLayers" onclick="window.xoaLayersDaChon()">XÓA ĐÃ CHỌN</button>
+</footer>
+</section>
+<!-- TAB 2 -->
+<section aria-hidden="true" aria-labelledby="tabBtnThietKe" class="tab-content" id="tabThietKe" role="tabpanel">
+<div class="tab-body">
+<aside class="col-left">
+<div>
+<div class="section-kicker">TAB 2 · THƯ VIỆN MẶT CẮT</div>
+<div class="section-heading">Mặt cắt mẫu Left / Right</div>
+</div>
+<div class="form-row">
+<label>Tên mặt cắt</label>
+<input id="TenMatCat" style="font-weight:800;color:var(--primary)" type="text" value="Assembly 1"/>
+</div>
+<hr class="divider"/>
+<div class="section-title">Thêm cấu kiện</div>
+<div class="form-row">
+<label>Phía bố trí</label>
+<select id="BenBoTri">
+<option value="Center">Mốc Tim (Center)</option>
+<option value="Right">Phải tuyến (Right)</option>
+<option value="Left">Trái tuyến (Left)</option>
+</select>
+</div>
+<div class="form-row">
+<label>Loại cấu kiện</label>
+<select id="LoaiThanhPhan" onchange="window.onLoaiChange()">
+<option value="TimTuyen">Tim Tuyến</option>
+<option value="DaiPhanCach">Dải phân cách</option>
+<option value="LanXe">Làn xe</option>
+<option value="VachSon">Vạch sơn</option>
+<option value="ViaHe">Vỉa hè / mép tham chiếu</option>
+</select>
+</div>
+<div class="form-row" id="divKieuVach" style="display:none">
+<label>Layer tham chiếu</label>
+<div class="field-with-action">
+<select id="KieuVach" onchange="window.onTab2MarkingTemplateChange()"></select>
+<button class="btn-icon" id="btnRefreshLayer" onclick="window.lamMoiLayerTab2()" title="Làm mới layer">↻</button>
+</div>
+</div>
+<div class="form-row" id="divBeRong">
+<label id="lblBeRong">Bề rộng (m)</label>
+<input id="BeRongThanhPhan" min="0" step="0.01" type="number" value="0"/>
+</div>
+<div class="form-row">
+<label>Chiếm bề rộng</label>
+<label class="check-row" style="margin:0">
+<input checked="" id="IsChiemDienTich" type="checkbox"/>
+<span>Có</span>
+</label>
+</div>
+<button class="btn-outline btn-full" onclick="window.themThanhPhan()" style="border-color:var(--primary);color:var(--primary);margin-top:7px">+ THÊM VÀO MẶT CẮT</button>
+<button class="btn-mirror" onclick="window.doiXungQuaTim()">ĐỐI XỨNG QUA TIM</button>
+<hr class="divider"/>
+<div class="section-title">Chi tiết mặt cắt</div>
+<div class="t2-edit-mode-hint" id="t2EditModeHint">
+<span>Chế độ tạo mới</span>
+<small>Khi bấm SỬA một MCN đã lưu, có thể nhập trực tiếp bề rộng tại cột Rộng.</small>
+</div>
+<div class="table-wrapper" style="min-height:130px">
+<table class="arm-colgroup-table t2-parts-table">
+<colgroup><col style="width:36px"/><col style="width:74px"/><col style="width:210px"/><col style="width:80px"/><col style="width:62px"/><col style="width:62px"/></colgroup>
+<thead><tr>
+<th class="t2-col-no">#</th>
+<th class="t2-col-side">Phía</th>
+<th class="t2-col-part">Cấu kiện</th>
+<th class="t2-col-width">Rộng (m)</th>
+<th class="t2-col-move" data-no-sort="true">Đổi</th>
+<th class="t2-col-delete" data-no-sort="true">Xóa</th>
+</tr></thead>
+<tbody id="thanhPhanBody"></tbody>
+</table>
+</div>
+<div class="live-width" id="liveWidthTxt">Tổng bề rộng hình học (2 bên): 0.00 m</div>
+<button class="btn-success btn-full" id="btnSaveMatCat" onclick="window.luuMatCatVaoDanhSach()">LƯU MẶT CẮT</button>
+<button class="btn-warning btn-full" id="btnHuySua" onclick="window.huyCheDoSua()" style="display:none;margin-top:4px">HỦY CHỈNH SỬA</button>
+</aside>
+<div class="col-right">
+<section class="panel t2-preview-panel" id="t2PreviewPanel" style="flex:0 0 auto">
+<div class="flex-header">
+<div>
+<div class="section-kicker">XEM TRƯỚC KỸ THUẬT</div>
+<h3 class="section-title" style="margin:2px 0 0">MẶT CẮT NGANG ĐIỂN HÌNH</h3>
+</div>
+<div class="t2-preview-actions"><span class="chip">TIM · LEFT · RIGHT</span></div>
+</div>
+<canvas id="crossSectionCanvas"></canvas>
+</section>
+<section class="panel" style="flex:1;overflow:hidden">
+<div class="flex-header">
+<div>
+<div class="section-kicker">THƯ VIỆN MẶT CẮT</div>
+<h3 class="section-title" style="margin:2px 0 0">ASSEMBLY ĐÃ TẠO (<span id="lblTotalAssemblies">0</span>)</h3>
+</div>
+<div class="arm-memory-library-head">
+<span class="status-pill status-ready">TỰ LƯU NHỚ</span>
+<small>Dùng lại khi mở Palette / DWG mới</small>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<label class="custom-checkbox"><input id="cbxSelectAllAssemblies" onclick="window.toggleSelectAllAssemblies(this)" type="checkbox"/><span class="checkmark"></span><span class="helper">Chọn tất cả</span></label>
+<input id="timKiemMatCat" onkeyup="window.renderDanhSachDaLuu()" placeholder="Tìm mặt cắt..." style="width:190px" type="text"/>
+</div>
+</div>
+<div class="saved-list-container" id="danhSachMatCatDaTao"></div>
+</section>
+</div>
+</div>
+<footer class="action-footer">
+<button class="btn-success" id="btnSyncAssembly" onclick="window.dongBoAssemblyDaChon()" style="flex:1 1 320px">ĐỒNG BỘ MẶT CẮT ĐÃ CHỌN</button>
+<input accept=".json,application/json" hidden="" id="jsonFileInput" type="file"/>
+<button class="btn-outline" id="btnLoadCrossSectionLibrary" onclick="window.napThuVienMatCatMacDinh()" title="Nạp thư viện mặt cắt đi kèm plugin và ghi vào thư viện của DWG hiện tại">NẠP THƯ VIỆN</button>
+<button class="btn-outline" onclick="document.getElementById('jsonFileInput').click()" title="Chọn một thư viện mặt cắt JSON khác từ máy">NHẬP JSON KHÁC...</button>
+<button class="btn-outline" id="btnExportJSON" onclick="window.xuatJSONDaChon()">XUẤT JSON</button>
+<button class="btn-danger" onclick="window.xoaAssemblyDaChon()">XÓA MẶT CẮT</button>
+</footer>
+</section>
+<!-- TAB 3 -->
+<section aria-hidden="true" aria-labelledby="tabBtnVach2D" class="tab-content" id="tabVach2D" role="tabpanel">
+<div class="t3-dashboard">
+<section class="t3-topbar">
+<div>
+<div class="section-kicker">TAB 3 · TẠO VẠCH SƠN 2D</div>
+</div>
+<div class="t3-top-actions">
+<span class="chip" id="t3DrawingUnitBadge">CAD: chờ dữ liệu</span>
+<span class="status-pill status-wait" id="pipelineStatus">Chưa đối chiếu</span>
+<button class="btn-outline btn-context-info btn-refresh-pipeline" onclick="window.goiAction('Refresh_Pipeline_Status')">↻ LÀM MỚI DỮ LIỆU</button>
+</div>
+</section>
+<section class="t3-source-row">
+<article class="t3-source-card tim">
+<div class="t3-source-title"><div><strong>Chọn đường TIM</strong></div><span class="status-pill status-wait" id="statusTim">Chưa chọn</span></div>
+<div class="t3-source-count"><b id="txtCountTim">0</b> tuyến đã chọn</div>
+<button class="pipe-btn-action btn-purple" onclick="window.chonTimTuCAD()">CHỌN TỪ CAD</button>
+</article>
+<article class="t3-source-card edge">
+<div class="t3-source-title"><div><strong>Chọn đường MÉP</strong></div><span class="status-pill status-wait" id="statusMep">Chưa chọn</span></div>
+<div class="t3-source-count"><b id="txtCountMep">0</b> đường mép đã chọn</div>
+<button class="pipe-btn-action btn-info" onclick="window.chonMepTuCAD()">CHỌN TỪ CAD</button>
+</article>
+<article class="t3-source-card component">
+<div class="t3-source-title"><div><strong>Chọn MÉP CẤU KIỆN</strong></div><span class="status-pill status-wait" id="statusMepCauKien">Chưa chọn</span></div>
+<div class="t3-source-count"><b id="txtCountMepCauKien">0</b> đường mép đã chọn</div>
+<button class="pipe-btn-action btn-cyan" onclick="window.chonMepCauKienTuCAD()">CHỌN TỪ CAD</button>
+</article>
+<article class="t3-source-card overview">
+<div class="t3-source-title"><div><strong>Thông tin tổng quan</strong></div><span class="status-pill status-wait" id="statusAssembly">Chưa đồng bộ</span></div>
+<div class="t3-overview">
+<div class="t3-overview-row"><span>Thư viện mặt cắt</span><strong><span id="t3_daGan">0</span> mặt cắt sẵn sàng</strong></div>
+<div class="t3-overview-row"><span>Tổng số tuyến TIM</span><strong id="t3_tongTim">0</strong></div>
+<div class="t3-overview-row"><span>Tổng số đường MÉP</span><strong id="t3_tongMep">0</strong></div>
+<div class="t3-overview-row"><span>Tổng số MÉP CẤU KIỆN</span><strong id="t3_tongMepCauKien">0</strong></div>
+</div>
+<button class="btn-outline btn-context-info btn-reload-library" onclick="window.dongBoThuVienTab3()">NẠP LẠI THƯ VIỆN</button>
+</article>
+</section>
+<nav aria-label="Chọn bước xử lý" class="t3-compact-stepbar" id="t3CompactStepbar">
+<button class="active" data-step-index="1" onclick="window.setTab3CompactStep(1)">1. ĐỐI CHIẾU</button>
+<button data-step-index="2" onclick="window.setTab3CompactStep(2)">2. ĐA GIÁC VÀ XÉN</button>
+<button data-step-index="3" onclick="window.setTab3CompactStep(3)">3. VẠCH MÉP</button>
+<button data-step-index="4" onclick="window.setTab3CompactStep(4)">4. VẠCH 7.1/7.3</button>
+<button data-step-index="5" onclick="window.setTab3CompactStep(5)">5. VẠCH 1.2/2.2</button>
+</nav>
+<section class="t3-steps">
+<article class="t3-step" data-state="wait" id="pipeStep1">
+<header class="t3-step-head"><span class="t3-step-no t3-n1">BƯỚC 1</span><h3>DÒ VÀ ĐỐI CHIẾU</h3><span class="status-pill status-wait" id="stepStatus1">Chờ</span></header>
+<div class="t3-step-body">
+<div class="t3-step-section-title">Kết quả đối chiếu</div>
+<div class="t3-mini-stats">
+<div class="t3-mini-stat"><span>Đã khớp</span><strong class="text-green" id="compareMatched">0</strong></div>
+<div class="t3-mini-stat"><span>Cần xử lý</span><strong class="text-yellow" id="compareNeedsAction">0</strong></div>
+<div class="t3-mini-stat"><span>Thiếu mép</span><strong class="text-red" id="compareUnpaired">0</strong></div>
+</div>
+<div style="display:none"><span id="compareTotal">0</span></div>
+<div class="t3-result-tools">
+<input id="t3ResultSearch" oninput="window.filterComparisonResults()" placeholder="Tìm tuyến / mặt cắt..." type="text"/>
+<select id="t3ResultFilter" onchange="window.filterComparisonResults()"><option value="all">Tất cả kết quả</option><option value="matched">Đã khớp</option><option value="action">Cần xử lý</option><option value="unpaired">Chưa ghép đủ mép</option></select>
+</div>
+<div class="compare-table-wrap">
+<table class="arm-colgroup-table compare-table">
+<colgroup><col style="width:34px"/><col style="width:180px"/><col style="width:120px"/><col style="width:90px"/><col style="width:52px"/></colgroup><thead><tr><th style="width:28px">#</th><th>TIM / MÉP</th><th style="width:88px">MẶT CẮT</th><th style="width:66px">KQ</th><th style="width:44px" data-no-sort="true"></th></tr></thead><tbody id="comparisonResultBody"><tr class="compare-empty"><td colspan="5">Chưa có kết quả đối chiếu.</td></tr></tbody></table>
+</div>
+<div class="compare-footer-line" style="padding:0"><span id="compareVisibleCount">0 kết quả</span><button class="btn-outline btn-context-warning compare-row-btn btn-zoom-error" onclick="window.goiAction('Step1_ZoomKetQuaCanXuLy')">ZOOM LỖI</button></div>
+</div>
+<footer class="t3-step-footer"><button class="pipe-btn-action btn-purple" id="btnAnalyzePair" onclick="window.goiAction('Step1_PhanTichGhepCap')">DÒ VÀ ĐỐI CHIẾU</button><button class="pipe-btn-action btn-success btn-generate-longitudinal" onclick="window.goiAction('Step1_VeVachDocTuyen')">SINH VẠCH DỌC TUYẾN</button></footer>
+</article>
+<article class="t3-step" data-state="wait" id="pipeStep2">
+<header class="t3-step-head"><span class="t3-step-no t3-n2">BƯỚC 2</span><h3>TẠO ĐA GIÁC VÀ XÉN</h3><span class="status-pill status-wait" id="stepStatus2">Chờ</span></header>
+<div class="t3-step-body">
+<div class="t3-step-section-title">Cấu hình</div>
+<div class="t3-config-box"><div class="field-stack"><label>Layer polygon hỗ trợ</label><input id="t3_helperLayer" value="_9.HOTRO_VUNG_NUT_GIAO"/></div></div>
+<div class="t3-step-section-title">Kết quả</div>
+<div class="t3-result-pairs"><div><span>Polygon đã vẽ</span><strong class="text-blue" id="polygonCreated">0</strong></div><div><span>Đã xén</span><strong class="text-green" id="polygonTrimmed">0</strong></div></div>
+</div>
+<footer class="t3-step-footer t3-polygon-actions">
+<div class="t3-polygon-create-row">
+<button class="pipe-btn-action btn-info" id="btnStep2DrawPolygon" onclick="window.goiAction('Step2_VeDaGiacNut')">VẼ ĐA GIÁC</button>
+<button class="pipe-btn-action btn-cyan" id="btnStep2RefreshPolygon" onclick="window.goiAction('Step2_CapNhatDaGiacNut')">CẬP NHẬT ĐA GIÁC</button>
+</div>
+<button class="pipe-btn-action btn-danger t3-trim-action" id="btnStep2Cut" onclick="window.goiAction('Step2_CatVachTrongDaGiac')">CẮT VẠCH TRONG ĐA GIÁC</button>
+</footer>
+</article>
+<article class="t3-step" data-state="wait" id="pipeStep3">
+<header class="t3-step-head"><span class="t3-step-no t3-n3">BƯỚC 3</span><h3>VẠCH MÉP NÚT GIAO</h3><span class="status-pill status-wait" id="stepStatus3">Chờ</span></header>
+<div class="t3-step-body">
+<div class="t3-step-section-title">Cấu hình</div>
+<div class="t3-config-box">
+<div class="field-stack"><label>Layer vạch mép</label><select class="layer-select" id="t3_edgeLayer" onchange="window.syncTab3EdgeWidthFromTemplate?.(true)"><option>_2.VS_MARKING_EDGE</option></select></div>
+<div class="field-stack"><label>Offset vào phần xe chạy</label><div class="input-wrap"><input id="t3_edgeOffset" min="0" step="0.05" type="number" value="0.50"/><span>m</span></div></div>
+<div class="field-stack"><label>Bề rộng vạch mép</label><div class="input-wrap"><input id="t3_edgeMarkingWidth" min="0.05" max="0.30" step="0.01" type="number" value="0.15"/><span>m</span></div><small class="helper">Giới hạn 0.05–0.30 m · mặc định đồng bộ Width từ template Tab 1.</small></div>
+</div>
+</div>
+<footer class="t3-step-footer"><button class="pipe-btn-action btn-success" id="btnStep3" onclick="window.goiAction('Step3_VeVachMep')">SINH VẠCH MÉP</button></footer>
+</article>
+<article class="t3-step" data-state="wait" id="pipeStep4">
+<header class="t3-step-head"><span class="t3-step-no t3-n4">BƯỚC 4</span><h3>VẠCH DỪNG VÀ ĐI BỘ</h3><span class="status-pill status-wait" id="stepStatus4">Chờ</span></header>
+<div class="t3-step-body">
+<div class="t3-step-section-title">Cấu hình</div>
+<div class="t3-config-box">
+<div class="field-stack"><label>Layer vạch dừng 7.1</label><select class="layer-select" id="t3_stopLineLayer"><option>_2.VS_MARKING_STOP</option></select></div>
+<div class="field-stack"><label>Layer vạch đi bộ 7.3</label><select class="layer-select" id="t3_pedLineLayer"><option>_2.VS_MARKING_PEDESTRIAN</option></select></div>
+<div class="field-stack"><label>Chiều dài vạch 7.3</label><div class="input-wrap"><input id="t3_crosswalkWidth" min="3" step="1" type="number" value="3.00"/><span>m</span></div></div>
+<div class="field-stack"><label>Khoảng cách tim 7.3 → tim 7.1</label><div class="input-wrap"><input id="t3_stopToPedDistance" min="0.10" step="0.10" type="number" value="2.00"/><span>m</span></div></div>
+</div>
+</div>
+<footer class="t3-step-footer"><button class="pipe-btn-action btn-orange" id="btnStep4" onclick="window.goiAction('Step4_VeVachDungDiBo')">SINH VẠCH DỪNG VÀ ĐI BỘ</button></footer>
+</article>
+<article class="t3-step" data-state="wait" id="pipeStep5" style="display:none">
+<header class="t3-step-head"><span class="t3-step-no t3-n5">BƯỚC 5</span><h3>VẠCH TIẾP CẬN 1.2/2.2</h3><span class="status-pill status-wait" id="stepStatus5">Chờ</span></header>
+<div class="t3-step-body">
+<div class="t3-step-section-title">Cấu hình</div>
+<div class="t3-config-box">
+<div class="field-stack"><label>Khoảng cách lùi từ vạch dừng (m)</label><div class="input-wrap"><input id="t3_approachDistance" min="1" step="1" type="number" value="20"/><span>m</span></div></div>
+<div class="field-stack"><label>Mã vạch (Template)</label><select class="layer-select" id="t3_approachCode"><option value="1.2">Vạch 1.2 (Nét liền)</option><option value="2.2" selected>Vạch 2.2 (Nét liền)</option></select></div>
+</div>
+</div>
+<footer class="t3-step-footer"><button class="pipe-btn-action btn-info" id="btnStep5" onclick="window.goiAction('Step5_VeVachTiepCan')">BỐ TRÍ VẠCH 1.2/2.2</button></footer>
+</article>
+</section>
+<section class="t3-bottom">
+<div><div class="t3-bottom-title">TỔNG KẾT</div></div>
+<div class="t3-bottom-summary"><div><span>Vạch dọc</span><strong class="text-purple" id="sumLongitudinal">0</strong></div><div><span>Polygon</span><strong class="text-blue" id="sumIntersections">0</strong></div><div><span>Vạch mép</span><strong class="text-green" id="sumEdgeMarkings">0</strong></div><div><span>Dừng/đi bộ</span><strong class="text-orange" id="sumStopCrosswalk">0</strong></div><div><span>Cảnh báo</span><strong class="text-yellow" id="sumWarnings">0</strong></div><div><span>Lỗi</span><strong class="text-red" id="sumErrors">0</strong></div></div>
+</section>
+</div>
+</section>
+<!-- TAB 4 -->
+<section aria-hidden="true" aria-labelledby="tabBtnKyHieuBlock" class="tab-content" id="tabKyHieuBlock" role="tabpanel">
+<div class="b4u-shell">
+<header class="b4u-topbar">
+<div class="b4u-heading">
+<div class="section-kicker">TAB 4 · VẠCH 7.6 / 9.3</div>
+<div class="b4u-title">Bố trí 7.6 / 9.3 theo tuyến và mặt cắt</div>
+</div>
+<div class="b4u-roadbar b4u-roadbar-project">
+<div class="b4u-project-context">
+<strong>PHẠM VI PHÂN TÍCH</strong>
+<span>Toàn bộ các tuyến sử dụng MCN đại diện đã cấu hình</span>
+</div>
+<span class="status-pill status-wait" id="b4CadStatus">Chờ dữ liệu</span>
+<button class="btn-primary" id="b4AnalyzeBtn" onclick="window.analyzeSymbolPlacement()">PHÂN TÍCH BỐ TRÍ 7.6 / 9.3</button>
+</div>
+</header>
+
+<section class="b4u-readiness" aria-label="Dữ liệu đầu vào">
+<div class="b4u-ready-title"><strong>DỮ LIỆU ĐẦU VÀO</strong><span id="b4DataStatus">Chưa đủ dữ liệu</span></div>
+<div class="b4u-ready-item"><span>MCN</span><strong id="b4AssemblyCount">0</strong></div>
+<div class="b4u-ready-item"><span>TIM</span><strong id="b4SourceAxisCount">—</strong></div>
+<div class="b4u-ready-item"><span>Mốc 7.1</span><strong id="b4Source71Count">0</strong></div>
+<div class="b4u-ready-item"><span>Mốc 7.3</span><strong id="b4Source73Count">0</strong></div>
+<div class="b4u-ready-item library"><span>Ký hiệu CAD</span><strong id="b4BlockReady">0</strong></div>
+</section>
+
+<section class="b4u-workspace">
+<section class="b4-panel b4-profile b4u-profile">
+<header class="b4-panel-head"><div><strong>CẤU HÌNH THEO MẶT CẮT</strong><small>Cấu hình trực tiếp 7.6 và mũi tên 9.3 cho từng làn vào nút / thoát nút.</small></div></header>
+<div class="b4-profile-toolbar">
+<select id="b4AssemblyProfileSelect" onchange="window.changeTab4AssemblyProfile(this.value)">
+<option value="">Chọn mặt cắt từ Tab 2...</option>
+</select>
+<div class="b4-profile-actions">
+<span class="status-pill status-wait" id="b4ProfileStatus">Chưa chọn MCN</span>
+<span class="b4-dirty" hidden id="b4ProfileDirty">● CHƯA LƯU</span>
+<button class="btn-outline" onclick="window.reloadTab4AssemblyProfiles()">NẠP LẠI MCN</button>
+</div>
+</div>
+<div class="b4-profile-meta">
+<div><span>Tên mặt cắt</span><strong id="b4ProfileAssemblyName">—</strong></div>
+<div><span>Tổng số làn</span><strong id="b4ProfileLaneCount">—</strong></div>
+<div><span>Nhóm làn A</span><strong id="b4ProfileGroupA">—</strong></div>
+<div><span>Nhóm làn B</span><strong id="b4ProfileGroupB">—</strong></div>
+<div><span>Cấu kiện giữa</span><strong id="b4ProfileMedian">—</strong></div>
+</div>
+
+<div class="b4-lane-workspace" id="b4CustomConfigPanel">
+<section class="b4-lane-group">
+<header class="b4-lane-group-head"><strong>LÀN VÀO NÚT · INBOUND</strong><span id="b4InboundProfileCount">0 làn</span></header>
+<div class="b4-lane-list" id="b4InboundLaneProfile"><div class="b4-lane-empty">Chọn một MCN để cấu hình làn vào nút.</div></div>
+</section>
+<div class="b4-divider"><strong>TIM</strong><span>MCN</span></div>
+<section class="b4-lane-group">
+<header class="b4-lane-group-head"><strong>LÀN THOÁT NÚT · OUTBOUND</strong><span id="b4OutboundProfileCount">0 làn</span></header>
+<div class="b4-lane-list" id="b4OutboundLaneProfile"><div class="b4-lane-empty">Chọn một MCN để cấu hình làn thoát nút.</div></div>
+</section>
+</div>
+<footer class="b4-profile-foot">
+<div>MCN: <strong id="b4CurrentProfileName">Chưa có</strong> · Dùng bởi <strong id="b4ProfileAppliedRoads">0 tuyến / nhánh</strong></div>
+<div class="b4-profile-foot-actions"><button class="btn-outline" id="b4ResetProfileBtn" onclick="window.resetTab4AssemblyProfile()">KHÔI PHỤC</button><button class="btn-primary" id="b4SaveProfileBtn" onclick="window.saveTab4AssemblyProfile()">LƯU CẤU HÌNH MCN</button></div>
+</footer>
+</section>
+
+<aside class="b4u-settings">
+<section class="b4-panel b4-rules b4u-rules">
+<header class="b4-panel-head"><div><strong>QUY TẮC KHOẢNG CÁCH</strong><small>Chỉ các tham số dự án cần tùy biến.</small></div></header>
+<div class="b4-panel-body b4-rule-stack">
+<section class="b4-rule-section cyan">
+<div class="b4-rule-head"><span class="b4-rule-code cyan">7.6</span><div><strong>VẠCH CẢNH BÁO</strong></div></div>
+<div class="b4-form-row"><label>7.6 cách vạch 7.3</label><div class="b4-number"><input id="b4Distance76" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="30"/><span>m</span></div></div>
+<label class="b4-check-row"><input checked id="b4InboundOnly76" type="checkbox"/><span>Chỉ các làn đã bật 7.6</span></label>
+</section>
+<section class="b4-rule-section violet">
+<div class="b4-rule-head"><span class="b4-rule-code violet">9.3 IN</span><div><strong>MŨI TÊN TRƯỚC NÚT</strong></div></div>
+<div class="b4-form-row"><label>Mốc tham chiếu</label><select id="b4Anchor93" onchange="window.updateSymbolRules()"><option selected value="71">Vạch 7.1</option><option value="73">Vạch 7.3</option></select></div>
+<div class="b4-form-row"><label>Khoảng cách từ mốc</label><div class="b4-number"><input id="b4FirstDistance93" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="20"/><span>m</span></div></div>
+<div class="b4-form-row"><label>Số cụm 9.3</label><input id="b4ClusterCount93" max="10" min="1" onchange="window.updateSymbolRules()" step="1" type="number" value="3"/></div>
+<div class="b4-form-row"><label>Khoảng cách giữa cụm</label><div class="b4-number"><input id="b4ClusterSpacing93" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="25"/><span>m</span></div></div>
+</section>
+<section class="b4-rule-section green">
+<div class="b4-rule-head"><span class="b4-rule-code green">9.3 OUT</span><div><strong>MŨI TÊN SAU NÚT</strong></div></div>
+<div class="b4-form-row"><label>9.3 cách vạch 7.3</label><div class="b4-number"><input id="b4OutDistance93" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="15"/><span>m</span></div></div>
+<label class="b4-check-row"><input checked id="b4Rotate93" type="checkbox"/><span>Xoay theo hướng xe chạy</span></label>
+</section>
+<div class="b4-global-actions"><button class="btn-outline" onclick="window.resetSymbolPlacementRules()">KHÔI PHỤC</button><button class="btn-primary" onclick="window.saveSymbolPlacementDefaults()">LƯU QUY TẮC</button></div>
+</div>
+</section>
+
+<details class="b4-panel b4u-library" id="b4LibraryPanel">
+<summary><div><strong>THƯ VIỆN KÝ HIỆU CAD 7.6 / 9.3</strong><small id="b4LibraryStatus">Chưa quét thư viện.</small></div><span>▾</span></summary>
+<div class="b4-panel-body">
+<label class="b4-label">Đường dẫn thư viện</label>
+<div class="b4-folder-row"><input id="b4LibraryPath" placeholder="D:\\AUTO_ROAD_MARKING\\BLOCK_LIBRARY" readonly type="text"/><button class="btn-outline" onclick="window.selectSymbolLibraryFolder()">CHỌN...</button></div>
+<div class="b4-folder-actions"><button class="btn-primary" onclick="window.scanSymbolBlockLibrary()">QUÉT THƯ VIỆN</button><button class="btn-outline" onclick="window.refreshSymbolBlockLibrary()">LÀM MỚI</button></div>
+</div>
+</details>
+</aside>
+</section>
+
+<section class="b4u-results b4-panel">
+<header class="b4u-results-head">
+<div class="b4u-result-heading">
+<strong>DUYỆT KẾT QUẢ BỐ TRÍ</strong>
+<small id="b4AnalysisState">Chưa phân tích dự án</small>
+<div class="b4u-analysis-meta">
+<span><strong id="b4NodeCount">—</strong> nút giao</span>
+<i>·</i>
+<span><strong id="b4ApproachCount">—</strong> nhánh được xét</span>
+</div>
+</div>
+<div class="b4u-result-kpis">
+<div class="type76"><span>7.6</span><strong id="b4Count76">0</strong></div>
+<div class="type93"><span>9.3</span><strong id="b4Count93">0</strong></div>
+<div class="warn"><span>Cần kiểm tra</span><strong id="b4WarningCount">0</strong></div>
+<div class="selected"><span>Đã chọn</span><strong id="b4SelectedCount">0</strong></div>
+</div>
+</header>
+
+<div class="b4u-result-toolbar">
+<div class="b4-result-filters">
+<span class="b4u-toolbar-label">BỘ LỌC</span>
+<select id="b4ResultRoad" onchange="window.renderSymbolProposals()">
+<option value="all">Tất cả tuyến</option>
+</select>
+<select id="b4ResultType" onchange="window.renderSymbolProposals()">
+<option value="all">Tất cả loại</option>
+<option value="7.6">7.6</option>
+<option value="9.3">9.3</option>
+</select>
+<select id="b4ResultStatus" onchange="window.renderSymbolProposals()">
+<option value="all">Tất cả trạng thái</option>
+<option value="valid">HỢP LỆ</option>
+<option value="warning">CẦN KIỂM TRA</option>
+<option value="override">ĐÃ CHỈNH</option>
+<option value="generated">ĐÃ TẠO</option>
+</select>
+</div>
+<div class="b4u-selection-actions">
+<button class="btn-outline" onclick="window.selectAllSymbolProposals(true)">CHỌN TẤT CẢ ĐANG LỌC</button>
+<button class="btn-outline" onclick="window.selectAllSymbolProposals(false)">BỎ CHỌN</button>
+</div>
+</div>
+
+<div class="b4-table-wrap b4u-table-wrap">
+<table class="arm-colgroup-table b4-table b4u-table">
+<colgroup>
+<col style="width:34px"/>
+<col style="width:190px"/>
+<col style="width:78px"/>
+<col style="width:108px"/>
+<col style="width:92px"/>
+<col style="width:58px"/>
+<col style="width:116px"/>
+<col style="width:70px"/>
+<col style="width:92px"/>
+<col style="width:94px"/>
+<col style="width:108px"/>
+<col style="width:54px"/>
+<col style="width:48px"/>
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Tuyến / Nút</th>
+<th>Nhánh</th>
+<th>Chiều tiếp cận</th>
+<th>Làn áp dụng</th>
+<th>Loại</th>
+<th>Hướng mũi tên</th>
+<th>Mốc TC</th>
+<th>KC mốc (m)</th>
+<th>Lý trình</th>
+<th>Trạng thái</th>
+<th data-no-sort="true">Zoom</th>
+<th data-no-sort="true">Chọn</th>
+</tr>
+</thead>
+<tbody id="b4PlacementBody">
+<tr><td class="b4-empty-cell" colspan="13">Cấu hình MCN đại diện và bấm PHÂN TÍCH BỐ TRÍ 7.6 / 9.3.</td></tr>
+</tbody>
+</table>
+</div>
+
+<footer class="b4u-review-footer">
+<div class="b4u-review-summary">
+<span id="b4ProposalCount">0 vị trí</span>
+<span>Đã tạo: <strong id="b4GeneratedFooterCount">0</strong></span>
+<span>Đã chỉnh: <strong id="b4OverrideFooterCount">0</strong></span>
+</div>
+<button class="btn-success" disabled id="b4GenerateBtn" onclick="window.generateSymbolBlocks()">TẠO / CẬP NHẬT CÁC VỊ TRÍ ĐÃ CHỌN</button>
+</footer>
+</section>
+
+<!-- Compatibility values retained for bridge/state without occupying UI. -->
+<div hidden id="b4LegacyCompat">
+<span id="b4ConfiguredAssemblyCount">0</span><span id="b4ProposalSummary">0</span><span id="b4OverrideCount">0</span><span id="b4SourceAssemblyCount">0</span>
+<span id="b4AnchorCount">0</span><span id="b4LaneCount">0</span><span id="b4OutboundLaneCount">0</span>
+<span id="b4StopAnchor">—</span><span id="b4CrosswalkAnchor">—</span><span id="b4BoundaryAnchor">—</span><span id="b4RoadName">—</span><span id="b4AssemblyName">—</span>
+<span id="b4Station71Preview">—</span><span id="b4Gap71To73">—</span><span id="b4Station76Preview">—</span><span id="b4Distance76To73">—</span><span id="b4Station93Preview">—</span><span id="b4Distance93To73">—</span><span id="b4Distance93To71">—</span>
+<span id="b4RoadIdentityExample">—</span><span id="b4Layer93Example">—</span>
+<input id="b4CrosswalkOffset73" type="number" value="0"/><input id="b4StopOffset71" type="number" value="0"/><select id="b4Anchor76"><option value="73">7.3</option></select>
+<input checked id="b4Rotate76" type="checkbox"/><input checked id="b4AutoMovement93" type="checkbox"/><input checked id="b4EnableOut93" type="checkbox"/>
+</div>
+</div>
+</section>
+<!-- TAB 5 -->
+<section aria-hidden="true" aria-labelledby="tabBtnPhatSinh" class="tab-content" id="tabPhatSinh" role="tabpanel">
+<div class="s5-shell s5pro-shell" data-object-type="speed_hump">
+<header class="s5pro-topbar">
+<div class="s5pro-heading">
+<div class="section-kicker">TAB 5 · PHÁT SINH</div>
+<div class="s5pro-title">Bố trí đối tượng bổ sung theo tuyến</div>
+</div>
+<div class="s5pro-top-actions">
+<span class="status-pill status-wait" id="s5CadStatus">Chưa đọc dữ liệu</span>
+<button class="btn-outline" onclick="window.goiAction('Tab5_RefreshContext')">ĐỌC LẠI DỮ LIỆU</button>
+</div>
+</header>
+<section aria-label="Thông tin người dùng cần chọn" class="s5pro-decisions">
+<article class="s5pro-decision road">
+<div class="s5pro-decision-label">1. TUYẾN</div>
+<div class="s5pro-road-pick">
+<select id="s5RoadSelect" onchange="window.onTab5RoadChange()">
+<option value="">Chọn tuyến / Alignment...</option>
+</select>
+<button class="btn-outline s5pro-zoom" onclick="window.goiAction('Tab5_ZoomRoad')">ZOOM</button>
+</div>
+</article>
+<article class="s5pro-decision task" id="s5ModeContextCard">
+<div class="s5pro-decision-label">2. LOẠI ĐỐI TƯỢNG</div>
+<select hidden="" id="s5ObjectType">
+<option value="speed_hump">Gờ giảm tốc</option>
+<option value="manual_marking">Vạch mặt bằng</option>
+<option value="manual_block">Block có sẵn</option>
+</select>
+<div class="s5pro-task-tabs">
+<button class="active" data-s5-type="speed_hump" onclick="window.setTab5ObjectType('speed_hump')">GỜ GIẢM TỐC</button>
+<button data-s5-type="manual_marking" onclick="window.setTab5ObjectType('manual_marking')">VẠCH MẶT BẰNG</button>
+<button data-s5-type="manual_block" onclick="window.setTab5ObjectType('manual_block')">BLOCK CÓ SẴN</button>
+</div>
+<div hidden="" id="s5ObjectTypeDisplay">Gờ giảm tốc</div>
+</article>
+<div hidden="" id="s5LayerTemplateSlot">
+<select id="s5LayerTemplate" onchange="window.onTab5LayerChange()">
+<option value="">Chọn Layer từ thư viện Tab 1...</option>
+</select>
+</div>
+<button hidden="" id="s5QuickLayerBtn" onclick="window.toggleTab5QuickLayer()" type="button">+ LAYER</button>
+</section>
+<section class="s5pro-workspace">
+<section class="s5pro-builder">
+<header class="s5pro-panel-head">
+<div>
+<strong id="s5CreateTitle">TẠO VẠCH GỜ GIẢM TỐC</strong>
+<small hidden="" id="s5CreateSub"></small>
+</div>
+<span class="status-pill status-wait" id="s5SessionStatus">Chưa đủ dữ liệu</span>
+</header>
+<div class="s5pro-builder-body">
+<!-- SPEED HUMP -->
+<section class="s5pro-mode-pane" data-speed-mode="uniform" id="s5SpeedPanel">
+<div class="s5pro-choice-row">
+<div class="s5pro-choice-label">Cách bố trí</div>
+<div class="s5pro-segmented">
+<button aria-pressed="true" class="active" data-s5-speed-mode="uniform" onclick="window.setTab5SpeedMode('uniform')">RẢI ĐỀU</button>
+<button aria-pressed="false" data-s5-speed-mode="cluster" onclick="window.setTab5SpeedMode('cluster')">THEO CỤM</button>
+</div>
+</div>
+<div class="s5pro-section s5pro-mode-layer-section">
+<div class="s5pro-section-head">
+<div>
+<div class="s5pro-section-title">LAYER VẠCH</div>
+<div class="s5pro-mode-state active">LẤY TỪ THƯ VIỆN TAB 1</div>
+</div>
+</div>
+<div id="s5SpeedLayerSlot" class="s5pro-mode-layer-slot"></div>
+<div class="s5pro-layer-derived">
+<div><span>Mã vạch</span><strong id="s5MarkingCode">—</strong></div>
+<div><span>Layer CAD sẽ tạo</span><strong id="s5ResolvedLayer">Chọn tuyến và Layer vạch</strong></div>
+</div>
+</div>
+<div class="s5pro-section s5pro-common-cross-section">
+<div class="s5pro-section-head">
+<div>
+<div class="s5pro-section-title">PHẠM VI NGANG · DÙNG CHUNG</div>
+<div class="s5pro-mode-state active">BẮT BUỘC CHO RẢI ĐỀU &amp; THEO CỤM</div>
+</div>
+<span class="s5pro-standard-badge">VUÔNG GÓC TIM</span>
+</div>
+<div class="s5pro-grid2">
+<div class="s5pro-field">
+<label>Biên ngang 1</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5Boundary1">Chưa chọn</div>
+<button class="btn-outline" onclick="window.goiAction('Tab5_PickBoundary1')">CHỌN</button>
+</div>
+</div>
+<div class="s5pro-field">
+<label>Biên ngang 2</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5Boundary2">Chưa chọn</div>
+<button class="btn-outline" onclick="window.goiAction('Tab5_PickBoundary2')">CHỌN</button>
+</div>
+</div>
+</div>
+<div class="s5pro-engineering-note">
+Đường không có dải phân cách: chọn hai mép ngoài phần xe chạy. Đường có dải phân cách cứng: chọn mép dải phân cách và mép ngoài của chiều xe hướng về vùng nguy hiểm. Mỗi gờ được dựng vuông góc với tiếp tuyến TIM tại chính vị trí đặt.
+</div>
+</div>
+<div class="s5pro-section s5pro-distribution-panel is-active-mode" id="s5UniformPanel" data-s5-mode-panel="uniform">
+<div class="s5pro-section-head">
+<div>
+<div class="s5pro-section-title">RẢI ĐỀU · ĐOẠN CẦN GIẢM TỐC</div>
+<div class="s5pro-mode-state" data-s5-mode-state="uniform">ĐANG SỬ DỤNG</div>
+</div>
+<span class="s5pro-standard-badge">3–5 m</span>
+</div>
+<div class="s5pro-grid2" id="s5SegmentFields">
+<div class="s5pro-field">
+<label>Điểm đầu</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5StartStation">Chưa chọn</div>
+<button class="btn-outline" onclick="window.goiAction('Tab5_PickStart')">PICK</button>
+</div>
+</div>
+<div class="s5pro-field">
+<label>Điểm cuối</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5EndStation">Chưa chọn</div>
+<button class="btn-outline" onclick="window.goiAction('Tab5_PickEnd')">PICK</button>
+</div>
+</div>
+</div>
+<div class="s5pro-key-param">
+<label>Khoảng cách giữa các gờ</label>
+<div class="input-wrap">
+<input id="s5UniformSpacing" min="3.00" max="5.00" oninput="window.invalidateTab5Preview('Khoảng cách rải đều đã thay đổi')" step="0.10" type="number" value="4.00"/>
+<span>m</span>
+</div>
+</div>
+<div class="s5pro-engine-rule">
+<span>ENGINE KIỂM SOÁT</span>
+<strong>Khoảng cách hợp lệ 3–5 m · mỗi đoạn tối thiểu 10 gờ · đường cong dùng pháp tuyến cục bộ của TIM.</strong>
+</div>
+<input checked="" hidden="" id="s5BalanceRemainder" type="checkbox"/>
+</div>
+
+<div class="s5pro-section s5pro-distribution-panel is-mode-locked" hidden id="s5ClusterPanel" data-s5-mode-panel="cluster" aria-disabled="true" aria-hidden="true">
+<div class="s5pro-section-head">
+<div>
+<div class="s5pro-section-title">THEO CỤM · TIẾP CẬN VÙNG NGUY HIỂM</div>
+<div class="s5pro-mode-state" data-s5-mode-state="cluster">ĐANG KHÓA</div>
+</div>
+<span class="s5pro-standard-badge">5 → 6 → 7</span>
+</div>
+
+<div class="s5pro-grid2">
+<div class="s5pro-field">
+<label>Mốc vùng nguy hiểm</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5ClusterAnchor">Chưa chọn</div>
+<button class="btn-outline" onclick="window.goiAction('Tab5_PickClusterAnchor')">CHỌN</button>
+</div>
+<div class="s5pro-field-help">Chọn vị trí bắt đầu vùng nguy hiểm trên hoặc gần tuyến; phần mềm tự chiếu điểm chọn về TIM/RoadAxis để lấy station.</div>
+</div>
+
+<div class="s5pro-field" id="s5ClusterDirectionField">
+<label>Phía xe tiếp cận</label>
+<div class="s5pro-pick">
+<div class="s5pro-readonly" id="s5ClusterDirectionPoint">Chưa xác định</div>
+<button class="btn-outline" id="s5ClusterDirectionBtn" onclick="window.goiAction('Tab5_PickClusterDirection')">CHỈ PHÍA</button>
+</div>
+<div class="s5pro-field-help" id="s5ClusterDirectionHelp">Click một điểm về phía xe chạy tới vùng nguy hiểm. Không cần quan tâm tăng/giảm lý trình.</div>
+</div>
+</div>
+
+<input id="s5ClusterDirectionSign" type="hidden" value="1"/>
+
+<div class="s5pro-cluster-count">
+<label>Số cụm</label>
+<input id="s5ClusterCount" type="hidden" value="3"/>
+<div class="s5pro-cluster-options">
+<button type="button" data-s5-cluster-count="1" onclick="window.setTab5ClusterCount(1)">1 CỤM</button>
+<button type="button" data-s5-cluster-count="2" onclick="window.setTab5ClusterCount(2)">2 CỤM</button>
+<button type="button" class="active" data-s5-cluster-count="3" onclick="window.setTab5ClusterCount(3)">3 CỤM</button>
+</div>
+</div>
+
+<div class="s5pro-grid2 s5pro-cluster-variable-grid">
+<div class="s5pro-field">
+<label>Khoảng trống giữa các cụm</label>
+<div class="input-wrap">
+<input id="s5ClusterSpacing" min="15.00" max="30.00" oninput="window.invalidateTab5Preview('Khoảng cách giữa các cụm đã thay đổi')" step="0.50" type="number" value="20.00"/>
+<span>m</span>
+</div>
+<div class="s5pro-field-help">Khoảng cách dọc tuyến từ gờ cuối của cụm gần vùng nguy hiểm đến gờ đầu của cụm kế tiếp về phía xe tiếp cận.</div>
+</div>
+
+<div class="s5pro-field">
+<label>Khoảng cách cụm gần nhất → vùng nguy hiểm</label>
+<div class="input-wrap">
+<input id="s5ClusterOffset" min="0.00" max="20.00" oninput="window.invalidateTab5Preview('Khoảng cách tới vùng nguy hiểm đã thay đổi')" step="0.50" type="number" value="20.00"/>
+<span>m</span>
+</div>
+<div class="s5pro-field-help">Tính từ mốc vùng nguy hiểm đến gờ gần vùng nguy hiểm nhất của cụm 7; không vượt quá 20 m.</div>
+</div>
+</div>
+
+<div class="s5pro-cluster-rule">
+<span>QUY TẮC ENGINE</span>
+<strong id="s5ClusterRuleSummary">3 cụm: xe gặp 5 → 6 → 7 gờ trước vùng nguy hiểm · khoảng cách nội cụm 0.40 m.</strong>
+</div>
+
+<input id="s5BarsPerCluster" type="hidden" value="0"/>
+<input id="s5BarSpacing" type="hidden" value="0.40"/>
+</div>
+
+<div class="s5pro-speed-create-zone">
+<div class="s5pro-summary-title">KẾT QUẢ XEM TRƯỚC</div>
+<div class="s5pro-speed-result-grid" id="s5SpeedSummary">
+<div class="wide"><span>Phạm vi / mốc</span><strong id="s5PreviewRange">—</strong></div>
+<div><span>Số vạch</span><strong id="s5PreviewCount">0</strong></div>
+<div><span>Chiều dài</span><strong id="s5PreviewLength">—</strong></div>
+<div><span>Diện tích sơn</span><strong id="s5PreviewArea">—</strong></div>
+</div>
+<span hidden="" id="s5PreviewGroup">Tạo mới</span>
+<div class="s5-validation-line warning" id="s5ValidationMessage">Chọn đủ dữ liệu để kiểm tra bố trí.</div>
+<div class="s5pro-mode-create-actions">
+<button class="btn-outline" id="s5SecondaryBtn" onclick="window.tab5SecondaryAction()">KIỂM TRA BỐ TRÍ</button>
+<button class="btn-primary" id="s5GenerateBtn" onclick="window.tab5PrimaryAction()">TẠO VẠCH GỜ GIẢM TỐC</button>
+</div>
+</div>
+</section>
+<!-- MANUAL MARKING · ASSIGN LAYER TO EXISTING CAD OBJECTS -->
+<section class="s5pro-mode-pane s5pro-manual-assign" hidden="" id="s5ManualMarkingPanel">
+
+<div class="s5pro-manual-step">
+<div class="s5pro-manual-step-no">1</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">CHỌN ĐỐI TƯỢNG</div>
+<div class="s5pro-manual-pick-row">
+<button class="btn-primary" onclick="window.goiAction('Tab5_AdoptExistingMarking')">CHỌN ĐỐI TƯỢNG TRÊN CAD</button>
+<div class="s5pro-manual-selection">
+<strong id="s5ManualSelectedCount">0 đối tượng</strong>
+<span id="s5ManualSelectionSummary">Chưa chọn đối tượng.</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="s5pro-manual-step">
+<div class="s5pro-manual-step-no">2</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">CHỌN LAYER VẠCH · TỪ TAB 1</div>
+<div id="s5ManualLayerSlot" class="s5pro-manual-layer-slot"></div>
+<div class="s5pro-manual-layer-result">
+<span>Layer CAD sau khi hoàn thành</span>
+<strong id="s5ManualResolvedLayer">Chọn layer từ thư viện Tab 1</strong>
+</div>
+</div>
+</div>
+
+<div class="s5pro-manual-step finish">
+<div class="s5pro-manual-step-no">3</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">HOÀN THÀNH</div>
+<button class="btn-primary s5pro-manual-finish" id="s5ManualFinishBtn" onclick="window.goiAction('Tab5_AssignLayerToSelected')" type="button" disabled>
+GÁN LAYER &amp; NẠP VÀO QUẢN LÝ
+</button>
+</div>
+</div>
+
+<!-- Compatibility values remain internal; the UI does not expose group management. -->
+<input id="s5KeepManualConfig" type="checkbox" checked hidden/>
+<span id="s5ManualMarkingCode" hidden></span>
+<span id="s5ManualGroupId" hidden></span>
+</section>
+<!-- EXISTING BLOCK · MANAGED BY ROAD + BLOCKNAME -->
+<section class="s5pro-mode-pane s5pro-block-direct" hidden="" id="s5ManualBlockPanel">
+
+<div class="s5pro-manual-step">
+<div class="s5pro-manual-step-no">1</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">CHỌN BLOCK TRÊN CAD</div>
+<div class="s5pro-manual-pick-row">
+<button class="btn-primary" onclick="window.goiAction('Tab5_SelectExistingBlocks')">CHỌN BLOCK</button>
+<div class="s5pro-manual-selection">
+<strong id="s5BlockSelectedCount">0 Block</strong>
+<span id="s5ExistingBlockStatus">Chưa chọn Block.</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="s5pro-manual-step">
+<div class="s5pro-manual-step-no">2</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">KIỂM TRA ĐỊNH DANH QUẢN LÝ</div>
+<div class="s5pro-block-identity-note">
+<strong>Khóa quản lý = Tuyến + BlockName</strong>
+<span>Layer CAD không tham gia định danh. Đổi Layer không làm mất liên kết quản lý hoặc khối lượng.</span>
+</div>
+<div class="s5pro-block-stats">
+<div><span>Đã chọn</span><strong id="s5BlockSelectedStat">0</strong></div>
+<div><span>Chưa quản lý</span><strong class="text-yellow" id="s5BlockUnmanagedCount">0</strong></div>
+<div><span>Đã quản lý</span><strong class="text-green" id="s5BlockManagedCount">0</strong></div>
+<div><span>BlockName</span><strong id="s5BlockTypeCount">0</strong></div>
+</div>
+<div class="s5pro-table-wrap compact">
+<table class="arm-colgroup-table s5-block-table s5-block-direct-table">
+<colgroup>
+<col style="width:240px"/><col style="width:72px"/><col style="width:120px"/>
+</colgroup>
+<thead><tr><th>BlockName</th><th>SL</th><th>Trạng thái</th></tr></thead>
+<tbody id="s5SelectedBlockBody">
+<tr><td class="s5-block-empty" colspan="3">Chưa chọn Block trên CAD.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div class="s5pro-manual-step finish">
+<div class="s5pro-manual-step-no">3</div>
+<div class="s5pro-manual-step-main">
+<div class="s5pro-section-title">HOÀN THÀNH</div>
+<div class="s5pro-block-ready" id="s5BlockSyncReady">Chọn Block để nạp vào hệ thống quản lý.</div>
+<button class="btn-primary s5pro-manual-finish" id="s5BlockSyncButton" onclick="window.goiAction('Tab5_SyncExistingBlockProperties')" type="button" disabled>NẠP BLOCK VÀO QUẢN LÝ</button>
+</div>
+</div>
+
+<!-- Compatibility-only controls. Block management no longer depends on Rule/Layer. -->
+<div hidden>
+<select id="s5BlockScanScope"><option value="selection">selection</option></select>
+<select id="s5BlockRuleTarget"></select>
+<select id="s5BlockRuleSelect"></select>
+<input id="s5BlockRuleCode"/>
+<select id="s5BlockRuleLayer"></select>
+<input id="s5RememberBlockRule" type="checkbox"/>
+</div>
+</section>
+</div>
+</section>
+<aside class="s5pro-side">
+<section class="s5pro-manager s5pro-quantity-manager">
+<header class="s5pro-panel-head">
+<div>
+<strong>KHỐI LƯỢNG ĐỒNG BỘ THEO TUYẾN</strong>
+<small id="s5ManagerSubtitle">Cùng nguồn dữ liệu với Tab 6 · gồm vạch sinh ở Tab 3, Block 7.6/9.3 và các đối tượng Tab 5.</small>
+</div>
+<span class="status-pill status-ready" id="s5ManagerRoad">Chưa chọn tuyến</span>
+</header>
+
+<div class="s5pro-manager-stats">
+<div><span>Bản ghi quản lý</span><strong id="s5ManagerGroupStat">0</strong></div>
+<div><span>Block / ký hiệu</span><strong id="s5ManagerEntityStat">0</strong></div>
+<div><span>Chiều dài sơn</span><strong id="s5ManagerLengthStat">0.00 m</strong></div>
+<div><span>Diện tích sơn</span><strong id="s5ManagerAreaStat">0.00 m²</strong></div>
+</div>
+
+<!-- Compatibility controls: quantity panel is already scoped by selected road. -->
+<input hidden="" id="s5GroupSearch" type="text" value=""/>
+<select hidden="" id="s5GroupTypeFilter"><option value="all">Tất cả loại</option></select>
+<select hidden="" id="s5GroupStatusFilter"><option value="all">Tất cả trạng thái</option></select>
+
+<div class="s5pro-table-wrap">
+<table class="arm-colgroup-table s5-table s5-quantity-table">
+<colgroup>
+<col style="width:36px"/>
+<col style="width:128px"/>
+<col style="width:170px"/>
+<col style="width:150px"/>
+<col style="width:58px"/>
+<col style="width:64px"/>
+<col style="width:92px"/>
+<col style="width:92px"/>
+<col style="width:62px"/>
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Nguồn</th>
+<th>Mã / BlockName</th>
+<th>Layer CAD</th>
+<th>SL</th>
+<th>ĐVT</th>
+<th>Sơn thực</th>
+<th>Diện tích</th>
+<th data-no-sort="true">Zoom</th>
+</tr>
+</thead>
+<tbody id="s5ManagedBody">
+<tr><td colspan="9">Chọn tuyến để xem khối lượng.</td></tr>
+</tbody>
+</table>
+</div>
+<footer class="s5pro-manager-foot">
+<strong id="s5GroupCount">0 bản ghi</strong>
+<span id="s5EntityCount">0 block / ký hiệu</span>
+</footer>
+</section>
+
+<!-- Hidden values retained because the host bridge writes these IDs. -->
+<div hidden="">
+<span id="s5RoadIdentity">—</span>
+<span id="s5RoadAxis">—</span>
+<span id="s5ObjectModeText">—</span>
+<span id="s5LayerCadTitle">LAYER CAD</span>
+<span id="s5LayerResolveLabel">Layer CAD</span>
+<span id="s5LayerSource">Tab 1</span>
+<div id="s5ModeDerived"></div>
+</div>
+</aside>
+</section>
+<!-- Kept only for JS/backward compatibility; layer authoring belongs to Tab 1. -->
+<section hidden="" id="s5QuickLayer">
+<input id="s5QuickLayerCode" type="text"/>
+<input id="s5QuickLayerDescription" type="text"/>
+<select id="s5QuickLayerLinetype"><option value="CONTINUOUS">CONTINUOUS</option></select>
+<input id="s5QuickLayerWidth" type="number" value="0.15"/>
+<input id="s5QuickLayerColor" type="color" value="#ffffff"/>
+<input id="s5QuickLayerScale" type="number" value="1"/>
+<input id="s5QuickLayerStandardRef" type="text" value="QCVN 41:2024/BGTVT"/>
+</section>
+</div>
+</section>
+<!-- TAB 6 -->
+<section aria-hidden="true" aria-labelledby="tabBtnKhoiLuong" class="tab-content" id="tabKhoiLuong" role="tabpanel">
+<div class="q6-dashboard">
+<header class="q6-topbar">
+<div>
+<div class="section-kicker">TAB 6 · QUẢN LÝ KHỐI LƯỢNG VẠCH SƠN</div>
+<div class="q6-title">Khối lượng theo tuyến, nút giao và loại vạch</div>
+</div>
+<div class="q6-top-actions">
+<span class="status-pill status-wait" id="q6CadStatus">Chưa đọc CAD</span>
+<button class="btn-outline" id="q6RefreshBtn" onclick="window.refreshQuantityFromCad()">ĐỌC KHỐI LƯỢNG TỪ CAD</button>
+</div>
+</header>
+<section class="q6-summary-grid">
+<article class="q6-summary-card">
+<span class="q6-summary-label">Đối tượng vạch</span>
+<strong id="q6TotalObjects">0</strong>
+</article>
+<article class="q6-summary-card">
+<span class="q6-summary-label">Tuyến</span>
+<strong class="text-blue" id="q6RoadCount">0</strong>
+</article>
+<article class="q6-summary-card">
+<span class="q6-summary-label">Nút giao</span>
+<strong class="text-orange" id="q6NodeCount">0</strong>
+</article>
+<article class="q6-summary-card">
+<span class="q6-summary-label">Block / ký hiệu</span>
+<strong class="text-purple" id="q6BlockCount">0</strong>
+</article>
+<article class="q6-summary-card">
+<span class="q6-summary-label">Chiều dài sơn thực</span>
+<strong class="text-green" id="q6PaintedLength">0.00 m</strong>
+</article>
+<article class="q6-summary-card accent">
+<span class="q6-summary-label">Diện tích sơn</span>
+<strong id="q6PaintedArea">0.00 m²</strong>
+</article>
+</section>
+<section class="q6-workspace">
+<aside class="q6-owner-panel">
+<header class="q6-panel-head">
+<div>
+<strong>DANH MỤC QUẢN LÝ</strong>
+<small id="q6OwnerCount">0 nhóm</small>
+</div>
+</header>
+<div class="q6-owner-tabs">
+<button class="active" data-q6-owner-type="all" onclick="window.setQuantityOwnerType('all',this)">TẤT CẢ</button>
+<button data-q6-owner-type="road" onclick="window.setQuantityOwnerType('road',this)">TUYẾN</button>
+<button data-q6-owner-type="intersection" onclick="window.setQuantityOwnerType('intersection',this)">NÚT GIAO</button>
+</div>
+<div class="q6-owner-search">
+<input id="q6OwnerSearch" oninput="window.filterQuantityOwners()" placeholder="Tìm tên tuyến hoặc nút giao..." type="text"/>
+</div>
+<div class="q6-owner-list" id="q6OwnerList">
+<div class="q6-empty">Chưa đọc dữ liệu khối lượng từ CAD.</div>
+</div>
+</aside>
+<section class="q6-detail-panel">
+<header class="q6-detail-head">
+<div class="q6-current-owner">
+<span class="q6-current-label">PHẠM VI ĐANG XEM</span>
+<strong id="q6CurrentOwner">Tất cả tuyến và nút giao</strong>
+<small id="q6CurrentOwnerMeta">Chưa có dữ liệu</small>
+</div>
+<div class="q6-detail-tools">
+<input id="q6Search" oninput="window.filterQuantityTable()" placeholder="Tìm layer, mã vạch, nhóm..." type="text"/>
+<select id="q6MarkingFilter" onchange="window.filterQuantityTable()"><option value="all">Tất cả loại đối tượng</option></select>
+<select id="q6SourceFilter" onchange="window.filterQuantityTable()"><option value="all">Tất cả nguồn</option><option value="AUTO">Tự động</option><option value="AUTO_PROFILE">Theo cấu hình</option><option value="SEMI_AUTO">Bán tự động</option><option value="MANUAL_PLAN">Thủ công</option><option value="EXTERNAL_EXISTING">Có sẵn</option></select>
+</div>
+</header>
+<div class="q6-table-wrap">
+<table class="arm-colgroup-table q6-table">
+<colgroup><col style="width:34px"/><col style="width:160px"/><col style="width:80px"/><col style="width:80px"/><col style="width:110px"/><col style="width:100px"/><col style="width:160px"/><col style="width:180px"/><col style="width:60px"/><col style="width:70px"/><col style="width:90px"/><col style="width:95px"/><col style="width:56px"/></colgroup>
+<thead>
+<tr>
+<th class="q6-col-no">#</th>
+<th>Chủ sở hữu</th>
+<th class="q6-col-type">Phạm vi</th>
+<th class="q6-col-code">Mã</th>
+<th>Nhóm</th>
+<th>Nguồn</th>
+<th>Layer mẫu</th>
+<th>Layer CAD</th>
+<th class="q6-col-num">SL</th>
+<th class="q6-col-unit">ĐVT</th>
+<th class="q6-col-num">Sơn thực</th>
+<th class="q6-col-num">Diện tích</th>
+<th class="q6-col-action" data-no-sort="true"></th>
+</tr>
+</thead>
+<tbody id="q6QuantityBody">
+<tr class="q6-empty-row"><td colspan="13">Chưa có dữ liệu khối lượng.</td></tr>
+</tbody>
+</table>
+</div>
+<footer class="q6-table-footer">
+<div>
+<strong id="q6VisibleCount">0 đối tượng</strong>
+<span> · Diện tích đang lọc: <b id="q6FilteredArea">0.00 m²</b></span>
+</div>
+<div class="q6-freshness" id="q6Freshness"><span>Snapshot: <b id="q6DataTimestamp">Chưa đọc</b></span><span class="status-pill status-wait" id="q6DataFreshness">CHƯA CÓ DỮ LIỆU</span><span class="q6-warning-count">Chưa quản lý: <b id="q6UnmanagedCount">0</b></span></div>
+</footer>
+</section>
+</section>
+<section class="q6-export-bar">
+<div class="q6-export-info">
+<strong>EXCEL KHỐI LƯỢNG</strong>
+</div>
+<div class="q6-export-actions">
+<button class="btn-outline" id="q6ExportFiltered" onclick="window.exportQuantityExcel('filtered')">XUẤT DỮ LIỆU ĐANG LỌC</button>
+<button class="btn-primary" id="q6ExportAll" onclick="window.exportQuantityExcel('all')">XUẤT EXCEL TOÀN BỘ</button>
+</div>
+</section>
+</div>
+</section>
+</main>
+
+</div>
+<!-- UI 6.1: Professional ergonomic baseline. HTML giữ cấu trúc; nghiệp vụ thực được host C#/WebView2 cung cấp. -->
+<script src="./assets/js/core/app-shell.js"></script>
+<script src="./assets/js/config/host-actions.js"></script>
+<script src="./assets/js/tabs/tab3.js"></script>
+<script src="./assets/js/tabs/tab5.js"></script>
+<script src="./assets/js/tabs/tab1.js"></script>
+<script src="./assets/js/tabs/tab4.js"></script>
+<script src="./assets/js/core/ui-runtime.js"></script>
+<script src="./assets/js/bridge/arm-host-bridge.js" type="module"></script>
+</body>
+</html>

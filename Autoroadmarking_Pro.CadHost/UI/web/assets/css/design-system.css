@@ -1,0 +1,194 @@
+/* ========================================================================== 
+   UI NORMALIZATION 019 · LOCKED DESIGN SYSTEM / RESTORED TAB LAYOUTS
+   - Design tokens are the single source for size/spacing.
+   - Seven primary tabs stay on one row (horizontal scroll on very narrow hosts).
+   - Component dimensions are shared; module layouts remain module-specific.
+   - Tables use colgroup contracts and deterministic row geometry.
+   ========================================================================== */
+:root{
+  --arm-font-body:11px;
+  --arm-font-meta:10px;
+  --arm-font-section:11px;
+  --arm-font-title:14px;
+  --arm-control-h:32px;
+  --arm-control-h-compact:28px;
+  --arm-tab-h:38px;
+  --arm-table-head-h:34px;
+  --arm-table-row-h:38px;
+  --arm-gap-sm:6px;
+  --arm-gap-md:8px;
+  --arm-radius-control:5px;
+  --arm-ui-border:#2b405d;
+}
+
+/* 1 · Typography and components only. No module layout is defined here. */
+html,body{font-size:var(--arm-font-body);line-height:1.35}
+button,input,select,textarea{font-family:"Segoe UI",Arial,Tahoma,sans-serif;font-size:var(--arm-font-body)}
+.section-kicker{font-size:var(--arm-font-meta);font-weight:800;letter-spacing:.3px}
+.section-heading,.t0-title,.b4-title,.s5-title,.q6-title{font-size:var(--arm-font-title);line-height:1.25;font-weight:800}
+.section-title,.sub-title,.t3-step-section-title,.s5-card-label,.b4-label{font-size:var(--arm-font-section);line-height:1.25;font-weight:800}
+.helper,.brand-sub,.t0-sub,.b4-subtitle,.s5-subtitle,.q6-subtitle{font-size:var(--arm-font-meta);line-height:1.35}
+
+input[type=text],input[type=number],input[type=color],select{
+  min-height:var(--arm-control-h);height:var(--arm-control-h);padding:0 8px;
+  border-radius:var(--arm-radius-control);box-sizing:border-box
+}
+textarea{min-height:64px;padding:7px 8px;border-radius:var(--arm-radius-control)}
+.input-wrap{min-height:var(--arm-control-h);height:var(--arm-control-h)}
+.input-wrap input{height:100%;min-height:0}
+
+.btn-primary,.btn-info,.btn-success,.btn-purple,.btn-orange,.btn-cyan,.btn-warning,.btn-danger,.btn-outline,.btn-mirror,.pipe-btn-action,.arm-density-btn{
+  min-height:var(--arm-control-h);height:var(--arm-control-h);padding:0 10px;
+  border-radius:var(--arm-radius-control);box-sizing:border-box;line-height:1.1;
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap
+}
+.btn-icon{width:var(--arm-control-h);min-width:var(--arm-control-h);height:var(--arm-control-h);padding:0;display:inline-grid;place-items:center}
+.chip,.status-pill{min-height:22px;height:22px;padding:0 7px;font-size:10px}
+
+/* 2 · Primary navigation: exactly seven tracks, never a second row. */
+.tab-header{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(100px,1fr))!important;
+  grid-auto-flow:column!important;
+  grid-auto-rows:var(--arm-tab-h)!important;
+  min-height:var(--arm-tab-h)!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  white-space:nowrap!important;
+}
+.tab-header .tab-btn{
+  min-width:100px!important;width:auto!important;
+  min-height:var(--arm-tab-h)!important;height:var(--arm-tab-h)!important;
+  padding:0 8px!important;font-size:10.5px!important;font-weight:800!important;
+  border-bottom:0!important
+}
+.tab-header .tab-btn:nth-child(3){border-right:1px solid var(--border)!important}
+.tab-header .tab-btn:last-child{border-right:0!important}
+
+/* 3 · Height/scroll contract. Page never stretches because a child table grows. */
+.app-shell{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto}
+.tab-content-container{min-width:0;min-height:0;overflow:hidden}
+.tab-content{min-width:0;min-height:0;height:100%;overflow:hidden}
+.tab-content.active{display:flex}
+.table-wrapper,.t0-table-wrap,.compare-table-wrap,.b4-table-wrap,.s5-table-wrap,.s5-block-table-wrap,.q6-table-wrap{min-width:0;min-height:0;overflow:auto;scrollbar-gutter:stable}
+.col-left,.panel,.t0-form-panel,.t0-list-panel,.t3-step,.b4-panel,.s5-panel,.q6-owner-panel,.q6-detail-panel{min-width:0;min-height:0}
+
+/* 4 · Table geometry. Width comes from COLGROUP, not individual TH styles. */
+table.arm-colgroup-table,table.arm-stable-table{table-layout:fixed!important;border-collapse:collapse!important;border-spacing:0!important;font-variant-numeric:tabular-nums}
+table.arm-colgroup-table th[style*="width"],table.arm-colgroup-table td[style*="width"]{width:auto!important}
+table.arm-colgroup-table thead tr,table.arm-stable-table thead tr{height:var(--arm-table-head-h)!important}
+table.arm-colgroup-table tbody tr,table.arm-stable-table tbody tr{height:var(--arm-table-row-h)!important}
+table.arm-colgroup-table th,table.arm-stable-table th{
+  height:var(--arm-table-head-h)!important;min-height:var(--arm-table-head-h)!important;
+  padding:0 7px!important;vertical-align:middle!important;font-size:10.5px!important;line-height:1.15!important
+}
+table.arm-colgroup-table td,table.arm-stable-table td{
+  height:var(--arm-table-row-h)!important;min-height:var(--arm-table-row-h)!important;
+  padding:0 7px!important;vertical-align:middle!important;font-size:10.5px!important;line-height:1.2!important
+}
+table.arm-colgroup-table td button,table.arm-stable-table td button{
+  min-height:var(--arm-control-h-compact)!important;height:var(--arm-control-h-compact)!important;
+  padding:0 8px!important;font-size:10px!important
+}
+.arm-column-contract-error{outline:2px solid var(--danger)!important;outline-offset:-2px}
+
+/* 5 · TAB 0: compact form + full result table. */
+.t0-shell{height:100%;grid-template-rows:auto auto minmax(0,1fr)!important;gap:var(--arm-gap-md);overflow:hidden}
+.t0-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.t0-work{grid-template-columns:minmax(320px,350px) minmax(0,1fr)!important;gap:var(--arm-gap-md);overflow:hidden}
+.t0-list-panel{min-width:0;overflow:hidden}
+.t0-table{min-width:844px!important}
+
+/* 6 · TAB 1: stable two-pane library editor. */
+.tab-body.arm-split-grid{grid-template-columns:var(--arm-split-left,390px) 5px minmax(0,1fr)!important;gap:5px!important;overflow:hidden}
+.col-left{overflow:auto}
+.col-right{overflow:hidden}
+.t1-layer-table{min-width:1212px!important}
+.arm-layer-preview{min-width:0;max-width:100%;overflow:hidden}
+.arm-layer-actions{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+
+/* 7 · TAB 2: editor width is deliberately larger than Tab 1. */
+.tab-body.arm-split-grid{grid-template-columns:var(--arm-split-left,540px) 5px minmax(0,1fr)!important;gap:5px!important;overflow:hidden}
+.col-left{overflow:auto}
+.col-right{overflow:hidden}
+.t2-parts-table{min-width:510px!important}
+.t2-parts-table .t2-width-editor{height:28px;min-height:28px}
+
+/* 8 · TAB 3: retain the four-step dashboard layout used as the scale reference. */
+.tab-content{overflow:hidden}
+.t3-dashboard{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto!important;gap:var(--arm-gap-md);overflow:hidden!important}
+.t3-source-row{grid-template-columns:1fr 1fr 1fr 1.35fr!important;gap:var(--arm-gap-md)}
+.t3-steps{grid-template-columns:1.12fr .94fr .94fr 1.02fr!important;gap:var(--arm-gap-md);min-height:0}
+.t3-step{min-height:0}
+.t3-step-body{overflow:auto}
+.compare-table{min-width:476px!important}
+
+/* 9 · TAB 4: restore 3-column engineering workspace + dedicated result table. */
+.tab-content{overflow:hidden}
+.b4-shell{
+  height:100%;min-height:0;display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr) minmax(190px,30%)!important;
+  gap:var(--arm-gap-md);overflow:hidden!important
+}
+.b4-summary{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:var(--arm-gap-sm)}
+.b4-main{
+  display:grid!important;
+  grid-template-columns:minmax(250px,.72fr) minmax(590px,2fr) minmax(300px,.92fr)!important;
+  gap:var(--arm-gap-md);min-width:0;min-height:0;overflow:hidden!important
+}
+.b4-panel{overflow:hidden}
+.b4-panel-body{overflow:auto}
+.b4-profile{min-height:0;overflow:hidden}
+.b4-lane-workspace{min-height:0;overflow:hidden}
+.b4-lane-list{overflow:auto}
+.b4-results{min-height:0;overflow:hidden;grid-template-rows:38px minmax(0,1fr) 28px!important}
+.b4-table{min-width:1398px!important}
+.b4-panel-head strong,.b4-results-head strong{font-size:11px!important}
+.b4-panel-head small,.b4-results-head small{font-size:10px!important}
+.b4-form-row label,.b4-check-row{font-size:10.5px!important}
+
+/* 10 · TAB 5: four context cards + two-column create/manager workspace. */
+.tab-content{overflow:hidden}
+.s5-shell{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr)!important;gap:var(--arm-gap-md);overflow:hidden}
+.s5-context{grid-template-columns:minmax(220px,.95fr) minmax(200px,.82fr) minmax(210px,.88fr) minmax(300px,1.2fr)!important;gap:var(--arm-gap-md)}
+.s5-workspace{grid-template-columns:var(--arm-split-left,470px) 5px minmax(0,1fr)!important;gap:5px!important;min-height:0;overflow:hidden}
+.s5-create,.s5-manager{min-height:0;overflow:hidden}
+.s5-create-scroll,.s5-table-wrap{min-height:0;overflow:auto}
+.s5-mode-tabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.s5-segmented{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.s5-table{min-width:1179px!important}
+.s5-block-table{min-width:610px!important}
+
+/* 11 · TAB 6: summary cards + owner navigator + quantity table. */
+.tab-content{overflow:hidden}
+.q6-dashboard{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto!important;gap:var(--arm-gap-md);overflow:hidden!important}
+.q6-summary-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:var(--arm-gap-sm)}
+.q6-workspace{grid-template-columns:minmax(230px,270px) minmax(0,1fr)!important;gap:var(--arm-gap-md);min-height:0;overflow:hidden}
+.q6-owner-panel,.q6-detail-panel{min-height:0;overflow:hidden}
+.q6-detail-head{grid-template-columns:minmax(190px,.8fr) minmax(420px,1.6fr)!important;gap:var(--arm-gap-md);align-items:end}
+.q6-detail-tools{grid-template-columns:minmax(220px,1fr) minmax(140px,180px) minmax(140px,180px)!important;gap:var(--arm-gap-sm)}
+.q6-table{min-width:1275px!important}
+.q6-export-bar{grid-template-columns:minmax(220px,.8fr) minmax(260px,1.2fr) auto!important;gap:var(--arm-gap-md)}
+
+/* 12 · Responsive behavior preserves scale; modules may reflow, primary tabs never wrap. */
+@media(max-width:1279px){
+  .tab-header{grid-template-columns:repeat(7,minmax(100px,1fr))!important}
+  .t3-dashboard{overflow:auto!important}
+  .t3-steps{grid-template-columns:1fr 1fr!important}
+  .b4-shell{height:auto;min-height:100%;grid-template-rows:auto auto auto minmax(260px,380px)!important;overflow:auto!important}
+  .b4-main{grid-template-columns:minmax(250px,310px) minmax(0,1fr)!important;overflow:visible!important}
+  .b4-rules{grid-column:1/-1}
+  .s5-context{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .s5-workspace{grid-template-columns:1fr!important;overflow:auto!important}
+  .s5-workspace>.arm-splitter{display:none!important}
+  .q6-workspace{grid-template-columns:1fr!important;overflow:auto}
+  .q6-owner-list{max-height:190px}
+  .q6-detail-head{grid-template-columns:1fr!important}
+}
+@media(max-width:900px){
+  .t0-work{grid-template-columns:1fr!important;overflow:auto}
+  .tab-body.arm-split-grid,.tab-body.arm-split-grid{grid-template-columns:1fr!important;overflow:auto}
+  .tab-body>.arm-splitter,.tab-body>.arm-splitter{display:none!important}
+  .t3-source-row,.t3-steps{grid-template-columns:1fr!important}
+  .b4-main{grid-template-columns:1fr!important}
+  .q6-summary-grid,.b4-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}

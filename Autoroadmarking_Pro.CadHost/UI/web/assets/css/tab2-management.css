@@ -1,0 +1,4 @@
+
+#previewMatCat{position:relative;min-height:240px;display:flex;align-items:center;justify-content:center;gap:8px;overflow:auto}
+.mc-tim{height:180px;border-left:2px solid #ff7b32;padding-left:5px}
+.mc-item{padding:10px;border:1px solid #3a6680;text-align:center}

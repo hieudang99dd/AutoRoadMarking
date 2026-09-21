@@ -138,7 +138,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
                         {
                             List<Point3d> bullhornPoints = PreparePolygonPoints(
                                 center,
-                                chosen.SelectMany(x => new[] { x.Start, x.End }));
+                                chosen.SelectMany(x => x.Points));
 
                             if (IsValidPolygon(center, bullhornPoints))
                             {
@@ -577,37 +577,68 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
             {
                 int n = pl.NumberOfVertices;
                 int segmentCount = pl.Closed ? n : Math.Max(0, n - 1);
+                
+                var points = new List<Point3d>();
+                var bulges = new List<double>();
+                Point3d firstMid = Point3d.Origin;
+                Vector3d firstTs = Vector3d.XAxis;
+                Vector3d lastTe = Vector3d.XAxis;
+                double turnSum = 0.0;
+
                 for (int i = 0; i < segmentCount; i++)
                 {
-                    double bulge;
+                    double bulge = 0.0;
                     try { bulge = pl.GetBulgeAt(i); }
                     catch { continue; }
-                    if (Math.Abs(bulge) <= 1e-8) continue;
-
-                    int j = (i + 1) % n;
-                    Point3d start = ToXY(pl.GetPoint3dAt(i));
-                    Point3d end = ToXY(pl.GetPoint3dAt(j));
-                    if (start.DistanceTo(end) <= 1e-5) continue;
-
-                    Point3d mid = Midpoint(start, end);
-                    Vector3d ts = Vector3d.XAxis;
-                    Vector3d te = Vector3d.XAxis;
-                    try
+                    
+                    if (Math.Abs(bulge) > 1e-8)
                     {
-                        double p0 = i + 1e-4;
-                        double p1 = i + 1.0 - 1e-4;
-                        mid = ToXY(pl.GetPointAtParameter(i + 0.5));
-                        ts = SafeNormal(ToXY(pl.GetFirstDerivative(p0)), end - start);
-                        te = SafeNormal(ToXY(pl.GetFirstDerivative(p1)), end - start);
-                    }
-                    catch
-                    {
-                        Vector3d chord = SafeNormal(end - start, Vector3d.XAxis);
-                        ts = chord;
-                        te = chord;
-                    }
+                        int j = (i + 1) % n;
+                        Point3d start = ToXY(pl.GetPoint3dAt(i));
+                        Point3d end = ToXY(pl.GetPoint3dAt(j));
+                        if (start.DistanceTo(end) <= 1e-5) continue;
 
-                    yield return new BullhornSegment(edge.Handle, start, end, mid, ts, te, Math.Abs(4.0 * Math.Atan(bulge)), bulge);
+                        Point3d mid = Midpoint(start, end);
+                        Vector3d ts = Vector3d.XAxis;
+                        Vector3d te = Vector3d.XAxis;
+                        try
+                        {
+                            double p0 = i + 1e-4;
+                            double p1 = i + 1.0 - 1e-4;
+                            mid = ToXY(pl.GetPointAtParameter(i + 0.5));
+                            ts = SafeNormal(ToXY(pl.GetFirstDerivative(p0)), end - start);
+                            te = SafeNormal(ToXY(pl.GetFirstDerivative(p1)), end - start);
+                        }
+                        catch
+                        {
+                            Vector3d chord = SafeNormal(end - start, Vector3d.XAxis);
+                            ts = chord;
+                            te = chord;
+                        }
+
+                        if (points.Count == 0)
+                        {
+                            points.Add(start);
+                            firstMid = mid;
+                            firstTs = ts;
+                        }
+                        points.Add(end);
+                        bulges.Add(bulge);
+                        lastTe = te;
+                        turnSum += Math.Abs(4.0 * Math.Atan(bulge));
+                    }
+                    else if (points.Count > 0)
+                    {
+                        yield return new BullhornSegment(edge.Handle, points, bulges, firstMid, firstTs, lastTe, turnSum);
+                        points = new List<Point3d>();
+                        bulges = new List<double>();
+                        turnSum = 0.0;
+                    }
+                }
+                
+                if (points.Count > 0)
+                {
+                    yield return new BullhornSegment(edge.Handle, points, bulges, firstMid, firstTs, lastTe, turnSum);
                 }
                 yield break;
             }
@@ -630,7 +661,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
                 double turn = Math.Abs(NormalizeSignedAngle(AngleOf(te) - AngleOf(ts)));
                 double arcBulge = Math.Tan(Math.Abs(arc.TotalAngle) / 4.0);
                 if (arc.Normal.Z < 0.0) arcBulge = -arcBulge;
-                yield return new BullhornSegment(edge.Handle, start, end, mid, ts, te, turn, arcBulge);
+                yield return new BullhornSegment(edge.Handle, new List<Point3d> { start, end }, new List<double> { arcBulge }, mid, ts, te, turn);
                 yield break;
             }
 
@@ -643,11 +674,14 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
             {
                 Point3d start = ToXY(curve.StartPoint);
                 Point3d end = ToXY(curve.EndPoint);
-                Vector3d ts = SafeNormal(ToXY(curve.GetFirstDerivative(curve.StartParam)), end - start);
-                Vector3d te = SafeNormal(ToXY(curve.GetFirstDerivative(curve.EndParam)), end - start);
-                double turn = Math.Abs(NormalizeSignedAngle(AngleOf(te) - AngleOf(ts)));
-                Point3d mid = ToXY(curve.GetPointAtParameter((curve.StartParam + curve.EndParam) * 0.5));
-                fallbackSegment = new BullhornSegment(edge.Handle, start, end, mid, ts, te, turn, 0.0);
+                if (start.DistanceTo(end) > 1e-5)
+                {
+                    Vector3d ts = SafeNormal(ToXY(curve.GetFirstDerivative(curve.StartParam)), end - start);
+                    Vector3d te = SafeNormal(ToXY(curve.GetFirstDerivative(curve.EndParam)), end - start);
+                    double turn = Math.Abs(NormalizeSignedAngle(AngleOf(te) - AngleOf(ts)));
+                    Point3d mid = ToXY(curve.GetPointAtParameter((curve.StartParam + curve.EndParam) * 0.5));
+                    fallbackSegment = new BullhornSegment(edge.Handle, new List<Point3d> { start, end }, new List<double> { 0.0 }, mid, ts, te, turn);
+                }
             }
             catch { }
 
@@ -812,15 +846,11 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
             if (farProjectionA * farProjectionB > 0.25)
                 return false;
 
-            List<Point3d> raw = new List<Point3d>
-            {
-                branchPointA,
-                mainPointA,
-                farA.Point,
-                farB.Point,
-                mainPointB,
-                branchPointB
-            };
+            List<Point3d> raw = new List<Point3d>();
+            raw.AddRange(hornA.Points);
+            raw.Add(farA.Point);
+            raw.Add(farB.Point);
+            raw.AddRange(hornB.Points);
 
             List<Point3d> ordered = PreparePolygonPoints(center, raw);
             if (!IsValidTJunctionPolygon(center, ordered, branchDir, farA.Point, farB.Point))
@@ -1457,19 +1487,30 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
 
                 foreach (BullhornSegment horn in list)
                 {
-                    if (from.DistanceTo(horn.Start) <= tolerance &&
-                        to.DistanceTo(horn.End) <= tolerance)
+                    if (horn.Points == null || horn.Bulges == null || horn.Points.Count < 2) continue;
+                    
+                    bool found = false;
+                    for (int k = 0; k < horn.Points.Count - 1; k++)
                     {
-                        result[i] = horn.Bulge;
-                        break;
-                    }
+                        Point3d hFrom = horn.Points[k];
+                        Point3d hTo = horn.Points[k + 1];
+                        double hBulge = horn.Bulges[k];
 
-                    if (from.DistanceTo(horn.End) <= tolerance &&
-                        to.DistanceTo(horn.Start) <= tolerance)
-                    {
-                        result[i] = -horn.Bulge;
-                        break;
+                        if (from.DistanceTo(hFrom) <= tolerance && to.DistanceTo(hTo) <= tolerance)
+                        {
+                            result[i] = hBulge;
+                            found = true;
+                            break;
+                        }
+
+                        if (from.DistanceTo(hTo) <= tolerance && to.DistanceTo(hFrom) <= tolerance)
+                        {
+                            result[i] = -hBulge;
+                            found = true;
+                            break;
+                        }
                     }
+                    if (found) break;
                 }
             }
 
@@ -1801,26 +1842,28 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Intersections
 
         private sealed class BullhornSegment
         {
-            public BullhornSegment(string sourceHandle, Point3d start, Point3d end, Point3d mid, Vector3d startTangent, Vector3d endTangent, double turnRadians, double bulge)
+            public BullhornSegment(string sourceHandle, List<Point3d> points, List<double> bulges, Point3d mid, Vector3d startTangent, Vector3d endTangent, double turnRadians)
             {
                 SourceHandle = sourceHandle;
-                Start = start;
-                End = end;
+                Points = points;
+                Bulges = bulges;
+                Start = points.First();
+                End = points.Last();
                 Mid = mid;
                 StartTangent = startTangent;
                 EndTangent = endTangent;
                 TurnRadians = turnRadians;
-                Bulge = bulge;
+                Bulge = bulges.FirstOrDefault();
             }
             public string SourceHandle { get; }
+            public List<Point3d> Points { get; }
+            public List<double> Bulges { get; }
             public Point3d Start { get; }
             public Point3d End { get; }
             public Point3d Mid { get; }
             public Vector3d StartTangent { get; }
             public Vector3d EndTangent { get; }
             public double TurnRadians { get; }
-            // Bulge theo chiều Start -> End của đoạn cong gốc. Khi polygon đi ngược chiều,
-            // bulge được đảo dấu để giữ đúng hình học cung tròn. Spline/Ellipse fallback = 0.
             public double Bulge { get; }
         }
 

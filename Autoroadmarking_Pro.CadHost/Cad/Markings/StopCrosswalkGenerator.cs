@@ -1763,7 +1763,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                 {
                     bestScore = score;
                     bestOffset = insideOffset;
-                    bestHandle = entity.Handle.ToString();
+                    bestHandle = curve.Handle.ToString();
                     bestSource = isLongitudinal
                         ? "GENERATED_LONGITUDINAL_ROAD_EDGE_INNER_FACE"
                         : "GENERATED_INTERSECTION_EDGE_INNER_FACE";

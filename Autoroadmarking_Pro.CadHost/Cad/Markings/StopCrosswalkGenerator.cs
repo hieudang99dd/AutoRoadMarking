@@ -9,6 +9,7 @@ using Autoroadmarking_Pro.CadHost.Cad.Geometry;
 using Autoroadmarking_Pro.CadHost.Cad.Layers;
 using Autoroadmarking_Pro.CadHost.Cad.Metadata;
 using Autoroadmarking_Pro.CadHost.Cad.State;
+using Autoroadmarking_Pro.Application.Intersections;
 
 namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 {
@@ -19,8 +20,9 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
     /// - 7.3 là vạch đi bộ Mẫu 1 dạng ngựa vằn: bề rộng dải sơn và khoảng trống
     ///   được đọc trực tiếp từ template Tab 1; UI chỉ nhập chiều dài/phạm vi qua đường >= 3,0 m.
     /// - Bề rộng vùng 7.3 được chuẩn hóa theo cấp 1,0 m: 3 m, 4 m, 5 m...
-    /// - TIM vùng 7.3 đặt đúng tại đầu tiếp tuyến nơi đường cong sừng bò chuyển sang đoạn thẳng và dùng
-    ///   hai MÉP CAD thật làm giới hạn ngang.
+    /// - TIM vùng 7.3 lấy trực tiếp từ giao TIM với cạnh polygon đã tạo ở Bước 2;
+    ///   Step 4 không được tìm hoặc dịch sang một reference hình học khác.
+    /// - Hai MÉP CAD thật chỉ dùng để giới hạn ngang hình học 7.3.
     /// - Khoảng cách 7.3 -> 7.1 được hiểu là khoảng cách TIM-ĐẾN-TIM.
     /// - 7.1 dùng TIM + MÉP CAD thật của hướng vào nút làm giới hạn và chỉ kẻ hết BỀ RỘNG HƯỚNG XE CHẠY
     ///   đi vào nút (giao thông bên phải), không kẻ xuyên cả hai chiều đường.
@@ -121,26 +123,29 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                             double crossingLength = ResolveCrossingWidth(pedestrianTemplate, crossingWidthOverride);
 
-                            // Mốc tạo 7.3 là đúng điểm tiếp tuyến nơi sừng bò kết thúc
-                            // và chuyển sang đoạn MÉP thẳng. Toàn bộ cụm 7.3 được đặt RA NGOÀI NÚT
-                            // từ mốc này theo outwardSign; tuyệt đối không trải 1/2 chiều dài vào trong nút.
-                            string anchorSource = "STEP2_POLYGON_AXIS_INTERSECTION";
+                            // Contract Bước 4:
+                            // - giao TIM × cạnh polygon Bước 2 là reference chính thức và cũng là TIM 7.3;
+                            // - không dùng tangency/nearest/centroid heuristic để dịch reference;
+                            // - 7.3 trải đối xứng quanh mốc này;
+                            // - TIM 7.1 cách TIM 7.3 đúng distance theo outwardSign.
+                            const string anchorSource = "STEP2_POLYGON_AXIS_INTERSECTION";
                             double crosswalkAnchorStation = boundaryStation;
 
-                            // Tim 7.3 nằm đúng tại mốc Step 2 (điểm tiếp tuyến cong/thẳng của polygon)
+                            CrosswalkStopStationPlan stationPlan =
+                                new MarkingPlacementPlanner().PlanStopCrosswalk(
+                                    crosswalkAnchorStation,
+                                    outwardSign,
+                                    crossingLength,
+                                    distance,
+                                    _station.StartStation(axis),
+                                    _station.EndStation(axis));
+
                             double crosswalkCenterStation = crosswalkAnchorStation;
+                            double crosswalkStartStation = stationPlan.CrosswalkStartStation;
+                            double crosswalkOuterEdgeStation = stationPlan.CrosswalkEndStation;
+                            double stopStation = stationPlan.StopStation;
 
-                            // Dải 7.3 trải đều 2 bên mốc (vào trong và ra ngoài)
-                            double halfLength = crossingLength / 2.0;
-                            double crosswalkStartStation = crosswalkAnchorStation - outwardSign * halfLength;
-                            double crosswalkOuterEdgeStation = crosswalkAnchorStation + outwardSign * halfLength;
-
-                            // Khoảng cách cấu hình tính từ tim 7.3 (mốc) tới tim 7.1
-                            double stopStation = crosswalkAnchorStation + outwardSign * distance;
-
-                            if (!IsStationInside(axis, crosswalkStartStation) ||
-                                !IsStationInside(axis, crosswalkOuterEdgeStation) ||
-                                !IsStationInside(axis, stopStation))
+                            if (!stationPlan.IsValid)
                             {
                                 result.Rejected.Add(new StopCrosswalkRejectedPlacement
                                 {
@@ -150,7 +155,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                                     ApproachDirection = approachDirection,
                                     CrosswalkStation = crosswalkCenterStation,
                                     StopStation = stopStation,
-                                    Reason = "Vị trí 7.1 hoặc toàn bộ chiều dài 7.3 nằm ngoài miền station của RoadAxis."
+                                    Reason = stationPlan.Error
                                 });
                                 continue;
                             }

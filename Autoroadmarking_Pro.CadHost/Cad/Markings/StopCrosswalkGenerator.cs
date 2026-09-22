@@ -19,8 +19,9 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
     /// - 7.3 là vạch đi bộ Mẫu 1 dạng ngựa vằn: bề rộng dải sơn và khoảng trống
     ///   được đọc trực tiếp từ template Tab 1; UI chỉ nhập chiều dài/phạm vi qua đường >= 3,0 m.
     /// - Bề rộng vùng 7.3 được chuẩn hóa theo cấp 1,0 m: 3 m, 4 m, 5 m...
-    /// - TIM vùng 7.3 đặt đúng tại đầu tiếp tuyến nơi đường cong sừng bò chuyển sang đoạn thẳng và dùng
-    ///   hai MÉP CAD thật làm giới hạn ngang.
+    /// - TIM vùng 7.3 lấy trực tiếp từ giao TIM với biên polygon của Bước 2
+    ///   (STEP2_POLYGON_AXIS_INTERSECTION); không dịch sang một heuristic/tangency khác.
+    /// - Hai MÉP CAD thật chỉ dùng để giới hạn ngang hình học zebra 7.3.
     /// - Khoảng cách 7.3 -> 7.1 được hiểu là khoảng cách TIM-ĐẾN-TIM.
     /// - 7.1 dùng TIM + MÉP CAD thật của hướng vào nút làm giới hạn và chỉ kẻ hết BỀ RỘNG HƯỚNG XE CHẠY
     ///   đi vào nút (giao thông bên phải), không kẻ xuyên cả hai chiều đường.
@@ -107,8 +108,8 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                         foreach (double boundaryStation in boundaryStations)
                         {
-                            // boundaryStation chỉ dùng để nhận approach. Mốc đặt 7.3 thực tế được
-                            // dịch tới đúng điểm kết thúc sừng bò (đầu tiếp tuyến phía ngoài nút).
+                            // boundaryStation là reference chính thức của Bước 2:
+                            // giao TIM với biên polygon. Step 4 không được dịch reference này.
                             Point3d boundaryPoint = _station.PointAtStationOffset(
                                 axis, boundaryStation, 0.0, out Vector3d tangent);
 
@@ -121,9 +122,8 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                             double crossingLength = ResolveCrossingWidth(pedestrianTemplate, crossingWidthOverride);
 
-                            // Mốc tạo 7.3 là đúng điểm tiếp tuyến nơi sừng bò kết thúc
-                            // và chuyển sang đoạn MÉP thẳng. Toàn bộ cụm 7.3 được đặt RA NGOÀI NÚT
-                            // từ mốc này theo outwardSign; tuyệt đối không trải 1/2 chiều dài vào trong nút.
+                            // Mốc Step 2 chính là TIM 7.3. Zebra được trải đối xứng 1/2 chiều dài
+                            // về hai phía station của mốc này; hai MÉP CAD quyết định giới hạn ngang.
                             string anchorSource = "STEP2_POLYGON_AXIS_INTERSECTION";
                             double crosswalkAnchorStation = boundaryStation;
 

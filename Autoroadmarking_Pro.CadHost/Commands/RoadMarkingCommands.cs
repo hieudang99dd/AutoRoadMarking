@@ -72,11 +72,7 @@ namespace Autoroadmarking_Pro.CadHost.Commands
 
             try
             {
-                Document? commandDocument = AcApp.DocumentManager.MdiActiveDocument;
-                if (commandDocument == null)
-                    return;
-
-                while (CadCommandQueue.TryDequeue(commandDocument, out QueuedCadRequest request))
+                while (CadCommandQueue.TryDequeue(out QueuedCadRequest request))
                 {
                     bool interactive =
                         CadActionExecutor.IsInteractive(request.Action, request.Payload);

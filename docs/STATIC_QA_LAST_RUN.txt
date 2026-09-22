@@ -1,15 +1,22 @@
-AutoRoadMarking Pro FINAL SOURCE
-Static QA run: 2026-08-21 (package finalization)
+AutoRoadMarking Pro
+Static QA run: 2026-09-22 (GitHub Actions)
 
 STATIC QA: PASS
- - C# files: 104
- - HTML ids: 360 (unique)
+ - C# files: 105
+ - HTML ids: 368 (unique)
  - Modular JS files: 8
- - WebView post actions: 51 (all handled)
- - goiAction aliases: 27 (all mapped)
+ - WebView post actions: 56 (all handled)
+ - goiAction aliases: 28 (all mapped)
  - Node syntax check: pass
  - Tab 1: typed pattern/reference separated from project metadata
- - Tab 1: reserved metadata keys validated by backend policy + bundled CSV
+ - Tab 1: reserved metadata keys validated
  - 7.1↔7.3: configurable, no hard maximum 3 m
+ - 7.3 anchor: STEP2_POLYGON_AXIS_INTERSECTION
+ - Step 5: 1.1/1.2/2.1/2.2; no silent station clamp
+ - Canonical speed-hump code: GGT; legacy GTT migrates to GGT
  - DWG state schema: 11
+ - SOURCE_MANIFEST: deterministic and hash-checked
  - build/cache directories: none
+
+RUNTIME STATUS:
+ - Civil 3D compile / NETLOAD / DWG regression: PENDING

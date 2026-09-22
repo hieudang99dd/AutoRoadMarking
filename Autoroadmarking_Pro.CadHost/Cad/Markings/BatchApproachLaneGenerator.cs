@@ -243,105 +243,100 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                 foreach (double offset in plan.Offsets)
                 {
-                    using (var segment = new Polyline())
+                    var segment = new Polyline();
+
+                    double plannedLength = Math.Abs(plan.EndStation - plan.StartStation);
+                    int intervalCount = Math.Max(
+                        2,
+                        (int)Math.Ceiling(plannedLength / 2.0));
+
+                    double step = (plan.EndStation - plan.StartStation) / intervalCount;
+
+                    for (int i = 0; i <= intervalCount; i++)
                     {
-                        double plannedLength = Math.Abs(plan.EndStation - plan.StartStation);
-                        int intervalCount = Math.Max(
-                            2,
-                            (int)Math.Ceiling(plannedLength / 2.0));
+                        double station = plan.StartStation + i * step;
+                        Point3d point = _station.PointAtStationOffset(
+                            plan.Axis,
+                            station,
+                            offset,
+                            out _);
 
-                        double step = (plan.EndStation - plan.StartStation) / intervalCount;
-
-                        for (int i = 0; i <= intervalCount; i++)
-                        {
-                            double station = plan.StartStation + i * step;
-                            Point3d point = _station.PointAtStationOffset(
-                                plan.Axis,
-                                station,
-                                offset,
-                                out _);
-
-                            segment.AddVertexAt(
-                                i,
-                                new Point2d(point.X, point.Y),
-                                0.0,
-                                template.Width,
-                                template.Width);
-                        }
-
-                        segment.ConstantWidth = template.Width;
-                        segment.Plinegen = true;
-                        segment.LayerId = layerId;
-                        segment.LinetypeScale = template.LinetypeScale > 0.0
-                            ? template.LinetypeScale
-                            : 1.0;
-
-                        modelSpace.AppendEntity(segment);
-                        tr.AddNewlyCreatedDBObject(segment, true);
-
-                        string logicalOwnerId = !string.IsNullOrWhiteSpace(plan.StopMetadata.OwnerId)
-                            ? plan.StopMetadata.OwnerId
-                            : plan.StopMetadata.RecordId;
-
-                        string generationKey = string.Join(
-                            "|",
-                            "APPROACH_LANE",
-                            code,
-                            plan.AxisInfo.EffectiveAxisKey,
-                            logicalOwnerId,
-                            plan.ApproachDirection,
-                            offset.ToString("0.###", CultureInfo.InvariantCulture));
-
-                        ArmEntityMetadata meta = _mapper.CreateGeneratedMarking(
-                            segment,
-                            generationKey,
-                            "AUTO_APPROACH",
-                            plan.AxisInfo.RoadName,
-                            plan.AxisInfo.EffectiveAxisKey,
-                            "INTERSECTION_APPROACH",
-                            logicalOwnerId,
-                            plan.Comparison.Mcn,
-                            code,
-                            template.Id,
-                            template.Layer,
+                        segment.AddVertexAt(
+                            i,
+                            new Point2d(point.X, point.Y),
+                            0.0,
                             template.Width,
-                            plan.StartStation,
-                            plan.EndStation);
-
-                        _mapper.BindAxis(meta, plan.AxisInfo);
-                        meta.CadLayer = segment.Layer;
-                        meta.Extra["ApproachDirection"] = plan.ApproachDirection;
-                        meta.Extra["QuantityRole"] =
-                            IsCenterLineCode(code) ? "CENTER_LINE" : "LANE_LINE";
-                        meta.Extra["PaintRatio"] =
-                            template.PaintRatio.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["AnchorStopLineRecordId"] =
-                            plan.StopMetadata.RecordId ?? string.Empty;
-                        meta.Extra["StopLineStation"] =
-                            plan.StopMetadata.Station.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["RequestedDistance"] =
-                            distance.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["StartStation"] =
-                            plan.StartStation.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["EndStation"] =
-                            plan.EndStation.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["LaneOffset"] =
-                            offset.ToString("0.########", CultureInfo.InvariantCulture);
-                        meta.Extra["PlacementRule"] =
-                            "SEGMENT_BEFORE_STOP_NO_CLAMP";
-                        meta.Extra["NodeKey"] =
-                            logicalOwnerId;
-
-                        _metadata.Write(segment, tr, meta);
-
-                        created++;
-                        totalLength += segment.Length;
-                        handles.Add(segment.ObjectId.Handle.ToString());
-
-                        // Entity đã thuộc Database/Transaction sau AppendEntity:
-                        // không dispose ở đây; Transaction quản lý lifetime.
-                        GC.KeepAlive(segment);
+                            template.Width);
                     }
+
+                    segment.ConstantWidth = template.Width;
+                    segment.Plinegen = true;
+                    segment.LayerId = layerId;
+                    segment.LinetypeScale = template.LinetypeScale > 0.0
+                        ? template.LinetypeScale
+                        : 1.0;
+
+                    modelSpace.AppendEntity(segment);
+                    tr.AddNewlyCreatedDBObject(segment, true);
+
+                    string logicalOwnerId = !string.IsNullOrWhiteSpace(plan.StopMetadata.OwnerId)
+                        ? plan.StopMetadata.OwnerId
+                        : plan.StopMetadata.RecordId;
+
+                    string generationKey = string.Join(
+                        "|",
+                        "APPROACH_LANE",
+                        code,
+                        plan.AxisInfo.EffectiveAxisKey,
+                        logicalOwnerId,
+                        plan.ApproachDirection,
+                        offset.ToString("0.###", CultureInfo.InvariantCulture));
+
+                    ArmEntityMetadata meta = _mapper.CreateGeneratedMarking(
+                        segment,
+                        generationKey,
+                        "AUTO_APPROACH",
+                        plan.AxisInfo.RoadName,
+                        plan.AxisInfo.EffectiveAxisKey,
+                        "INTERSECTION_APPROACH",
+                        logicalOwnerId,
+                        plan.Comparison.Mcn,
+                        code,
+                        template.Id,
+                        template.Layer,
+                        template.Width,
+                        plan.StartStation,
+                        plan.EndStation);
+
+                    _mapper.BindAxis(meta, plan.AxisInfo);
+                    meta.CadLayer = segment.Layer;
+                    meta.Extra["ApproachDirection"] = plan.ApproachDirection;
+                    meta.Extra["QuantityRole"] =
+                        IsCenterLineCode(code) ? "CENTER_LINE" : "LANE_LINE";
+                    meta.Extra["PaintRatio"] =
+                        template.PaintRatio.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["AnchorStopLineRecordId"] =
+                        plan.StopMetadata.RecordId ?? string.Empty;
+                    meta.Extra["StopLineStation"] =
+                        plan.StopMetadata.Station.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["RequestedDistance"] =
+                        distance.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["StartStation"] =
+                        plan.StartStation.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["EndStation"] =
+                        plan.EndStation.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["LaneOffset"] =
+                        offset.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["PlacementRule"] =
+                        "SEGMENT_BEFORE_STOP_NO_CLAMP";
+                    meta.Extra["NodeKey"] =
+                        logicalOwnerId;
+
+                    _metadata.Write(segment, tr, meta);
+
+                    created++;
+                    totalLength += segment.Length;
+                    handles.Add(segment.ObjectId.Handle.ToString());
                 }
             }
 
@@ -387,7 +382,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
         {
             var result = new List<double>();
 
-            List<ArmCrossSectionComponentState> lanes = crossSection.Components
+            List<ArmCrossSectionPartState> lanes = crossSection.Components
                 .Where(x =>
                     string.Equals(x.Role, "Lane", StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.Side, side, StringComparison.OrdinalIgnoreCase))

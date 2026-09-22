@@ -212,9 +212,21 @@ function dispatch(action,data){
     case 'ScanSymbolBlockLibrary': renderBlockLibrary(data); break;
     case 'ReadSymbolPlacementWorkspace': renderSymbolWorkspace(data); break;
     case 'SaveSymbolProfile': post('ReadSymbolPlacementWorkspace',{}); break;
-    case 'AnalyzeSymbolBlockPlacement': arm.proposals=arr(ci(data,'proposals')); renderProposals(); { const w=arr(ci(data,'warnings')); if(w.length) toast(w.slice(0,4).join(' · ')+(w.length>4?` · +${w.length-4} cảnh báo`:''),'warning'); } break;
+    case 'AnalyzeSymbolBlockPlacement': {
+      arm.proposals=arr(ci(data,'proposals'));
+      const warnings=arr(ci(data,'warnings'));
+      setText('b4WarningCount',warnings.length);
+      setText('b4AnalysisState',`Đã phân tích ${arm.proposals.length} vị trí${warnings.length?` · ${warnings.length} cảnh báo`:''}`);
+      renderProposals();
+      if(warnings.length) toast(warnings.slice(0,4).join(' · ')+(warnings.length>4?` · +${warnings.length-4} cảnh báo`:''),'warning');
+      break;
+    }
     case 'GenerateSymbolBlocksCAD': post('ReadSymbolPlacementWorkspace',{}); window.setQuantitySnapshotState?.({dirty:true}); break;
-    case 'SaveSymbolPlacementDefaults': applyBlockRulesFromHost(ci(data,'rules')); break;
+    case 'SaveSymbolPlacementDefaults': {
+      applyBlockRulesFromHost(ci(data,'rules'));
+      const dirty=$('b4RulesDirty'); if(dirty){dirty.hidden=true;delete dirty.dataset.dirty;}
+      break;
+    }
     case 'ReadSupplementaryWorkspace': receiveSupplementaryWorkspace(data); break;
     case 'SelectSupplementaryBoundary': receiveSupplementaryBoundary(data); break;
     case 'SelectSupplementaryEntities': receiveSupplementaryEntities(data,false); break;
@@ -844,24 +856,163 @@ window.requestTab4AssembliesFromHost=window.refreshSymbolPlacementWorkspace;
 window.selectSymbolLibraryFolder=()=>{markCadPick('CHỌN THƯ MỤC BLOCK','Hộp thoại chọn thư viện DWG sẽ mở');post('SelectSymbolLibraryFolder',{});};
 window.scanSymbolBlockLibrary=()=>post('ScanSymbolBlockLibrary',{libraryPath:txt('b4LibraryPath')});
 window.refreshSymbolBlockLibrary=window.scanSymbolBlockLibrary;
-function renderBlockLibrary(d){const blocks=arr(ci(d,'blocks'));setValue('b4LibraryPath',prop(d,'path',prop(d,'folderPath','')));setText('b4LibraryStatus',`${blocks.length} Block DWG đã nhận dạng`);setText('b4BlockReady',blocks.length);setStatus('b4CadStatus','Đã đọc thư viện',blocks.length?'ready':'running');}
-function renderSymbolWorkspace(d){arm.symbolProfiles=arr(ci(d,'profiles'));arm.crossSections=arr(ci(d,'crossSections')).length?arr(ci(d,'crossSections')):arm.crossSections;{const activeIds=arr(ci(d,'activeCrossSectionIds'));if(activeIds.length||ci(d,'activeCrossSectionIds')!==undefined)arm.activeCrossSectionIds=new Set(activeIds.map(String));}arm.proposals=arr(ci(d,'Proposals',ci(d,'proposals')));const blocks=arr(ci(d,'Blocks',ci(d,'blocks'))),nodes=arr(ci(d,'Nodes',ci(d,'nodes'))),axes=arr(ci(d,'roadAxes'));if(axes.length){arm.roadCatalog=axes;syncRoadsEverywhere?.();}const approaches=nodes.flatMap(n=>arr(ci(n,'Approaches')));setValue('b4LibraryPath',prop(d,'LibraryPath',prop(d,'libraryPath','')));setText('b4NodeCount',nodes.length);setText('b4ApproachCount',approaches.length);setText('b4SourceAxisCount',axes.length||arm.roadCatalog.length);setText('b4Source71Count',nodes.filter(n=>ci(n,'Station71')!==null&&ci(n,'Station71')!==undefined).length);setText('b4Source73Count',nodes.filter(n=>ci(n,'Station73')!==null&&ci(n,'Station73')!==undefined).length);setText('b4AnchorCount',nodes.filter(n=>(ci(n,'Station71')!==null&&ci(n,'Station71')!==undefined)||(ci(n,'Station73')!==null&&ci(n,'Station73')!==undefined)).length);setText('b4LaneCount',approaches.reduce((sum,a)=>sum+arr(ci(a,'Lanes')).length,0));setText('b4OutboundLaneCount',approaches.filter(a=>String(prop(a,'InboundDirection')).toUpperCase()==='REVERSE').reduce((sum,a)=>sum+arr(ci(a,'Lanes')).length,0));setText('b4BlockReady',blocks.length);applyBlockRulesFromHost(ci(d,'rules'));window.setTab4AssembliesFromTab2?.(decorateSectionsForTab4());applySavedSymbolProfile(txt('b4AssemblyProfileSelect'));renderProposals();setStatus('b4CadStatus','Dữ liệu mới','ready');}
+function renderBlockLibrary(d){
+  const blocks=arr(ci(d,'blocks'));
+  const path=prop(d,'path',prop(d,'folderPath',''));
+  setValue('b4LibraryPath',path);
+  setText('b4LibraryStatus',blocks.length?`${blocks.length} Block DWG đã nhận dạng`:'Chưa nhận dạng được Block DWG hợp lệ');
+  setText('b4BlockReady',blocks.length);
+  setStatus('b4CadStatus',blocks.length?'Đã đọc thư viện':'Thiếu nguồn Block',blocks.length?'ready':'running');
+}
+function renderSymbolWorkspace(d){
+  arm.symbolProfiles=arr(ci(d,'profiles'));
+  arm.crossSections=arr(ci(d,'crossSections')).length?arr(ci(d,'crossSections')):arm.crossSections;
+  {
+    const activeIds=arr(ci(d,'activeCrossSectionIds'));
+    if(activeIds.length||ci(d,'activeCrossSectionIds')!==undefined) arm.activeCrossSectionIds=new Set(activeIds.map(String));
+  }
+  arm.proposals=arr(ci(d,'Proposals',ci(d,'proposals')));
+  const blocks=arr(ci(d,'Blocks',ci(d,'blocks')));
+  const nodes=arr(ci(d,'Nodes',ci(d,'nodes')));
+  const axes=arr(ci(d,'roadAxes'));
+  if(axes.length){arm.roadCatalog=axes;syncRoadsEverywhere?.();}
+  const approaches=nodes.flatMap(n=>arr(ci(n,'Approaches')));
+  const source71=nodes.filter(n=>ci(n,'Station71')!==null&&ci(n,'Station71')!==undefined).length;
+  const source73=nodes.filter(n=>ci(n,'Station73')!==null&&ci(n,'Station73')!==undefined).length;
+  const axisCount=axes.length||arm.roadCatalog.length;
+  const effectiveSections=decorateSectionsForTab4();
+
+  setValue('b4LibraryPath',prop(d,'LibraryPath',prop(d,'libraryPath','')));
+  setText('b4NodeCount',nodes.length);
+  setText('b4ApproachCount',approaches.length);
+  setText('b4SourceAxisCount',axisCount);
+  setText('b4Source71Count',source71);
+  setText('b4Source73Count',source73);
+  setText('b4AnchorCount',nodes.filter(n=>(ci(n,'Station71')!==null&&ci(n,'Station71')!==undefined)||(ci(n,'Station73')!==null&&ci(n,'Station73')!==undefined)).length);
+  setText('b4LaneCount',approaches.reduce((sum,a)=>sum+arr(ci(a,'Lanes')).length,0));
+  setText('b4OutboundLaneCount',approaches.filter(a=>String(prop(a,'InboundDirection')).toUpperCase()==='REVERSE').reduce((sum,a)=>sum+arr(ci(a,'Lanes')).length,0));
+  setText('b4BlockReady',blocks.length);
+  setText('b4LibraryStatus',blocks.length?`${blocks.length} Block DWG sẵn sàng`:'Chưa quét nguồn Block');
+
+  const missing=[];
+  if(!effectiveSections.length) missing.push('MCN');
+  if(!axisCount) missing.push('TIM');
+  if(!source71) missing.push('7.1');
+  if(!source73) missing.push('7.3');
+  setText('b4DataStatus',missing.length?`Thiếu ${missing.join(' · ')}`:'ĐỦ DỮ LIỆU NGUỒN');
+
+  applyBlockRulesFromHost(ci(d,'rules'));
+  window.setTab4AssembliesFromTab2?.(effectiveSections);
+  applySavedSymbolProfile(txt('b4AssemblyProfileSelect'));
+  refreshProposalRoadFilter();
+  renderProposals();
+  setText('b4AnalysisState',arm.proposals.length?`Đang có ${arm.proposals.length} vị trí đã phân tích`:'Chưa phân tích dự án');
+  setStatus('b4CadStatus',missing.length?'Thiếu dữ liệu nguồn':'Dữ liệu mới',missing.length?'running':'ready');
+}
 function applyBlockRulesFromHost(r){if(!r)return;const map={b4Distance76:'distance76',b4Anchor93:'anchor93',b4FirstDistance93:'firstDistance93',b4ClusterCount93:'clusterCount93',b4ClusterSpacing93:'clusterSpacing93',b4OutDistance93:'outDistance93'};for(const [id,key] of Object.entries(map)){const v=ci(r,key);if(v!==undefined)setValue(id,v);}if(ci(r,'inboundOnly76')!==undefined&&$('b4InboundOnly76'))$('b4InboundOnly76').checked=!!ci(r,'inboundOnly76');if(ci(r,'rotateWithTraffic')!==undefined&&$('b4Rotate93'))$('b4Rotate93').checked=!!ci(r,'rotateWithTraffic');}
 function blockRules(){return {distance76:num('b4Distance76',30),inboundOnly76:checked('b4InboundOnly76'),anchor93:txt('b4Anchor93','71'),firstDistance93:num('b4FirstDistance93',20),clusterCount93:Math.max(1,num('b4ClusterCount93',3)),clusterSpacing93:num('b4ClusterSpacing93',25),outDistance93:num('b4OutDistance93',15),rotateWithTraffic:checked('b4Rotate93')};}
-window.updateSymbolRules=()=>{const dirty=$('b4ProfileDirty');if(dirty){dirty.hidden=false;dirty.dataset.dirty='true';}};
+window.updateSymbolRules=()=>{const dirty=$('b4RulesDirty');if(dirty){dirty.hidden=false;dirty.dataset.dirty='true';}};
 window.changeSymbolNode=window.changeSymbolApproach=()=>renderProposals();
 window.saveSymbolPlacementDefaults=()=>post('SaveSymbolPlacementDefaults',{rules:blockRules()});
-window.resetSymbolPlacementRules=()=>{setValue('b4Distance76',30);setValue('b4Anchor93','71');setValue('b4FirstDistance93',20);setValue('b4ClusterCount93',3);setValue('b4ClusterSpacing93',25);setValue('b4OutDistance93',15);if($('b4InboundOnly76'))$('b4InboundOnly76').checked=true;if($('b4Rotate93'))$('b4Rotate93').checked=true;};
+window.resetSymbolPlacementRules=()=>{
+  setValue('b4Distance76',30);setValue('b4Anchor93','71');setValue('b4FirstDistance93',20);
+  setValue('b4ClusterCount93',3);setValue('b4ClusterSpacing93',25);setValue('b4OutDistance93',15);
+  if($('b4InboundOnly76'))$('b4InboundOnly76').checked=true;
+  if($('b4Rotate93'))$('b4Rotate93').checked=true;
+  window.updateSymbolRules();
+};
 function canonicalLaneIdFromCard(c){const side=String(c.dataset.sourceSide||'').toLowerCase(),index=Number(c.dataset.laneIndex||0)+1;if(side==='left')return `L${index}`;if(side==='right')return `R${index}`;const raw=String(c.dataset.laneId||'');const m=raw.match(/(\d+)\s*$/);return `${c.dataset.direction==='out'?'R':'L'}${m?m[1]:index}`;}
 function symbolTrafficRole(lane){const explicit=String(prop(lane,'TrafficRole','')).toUpperCase();if(explicit==='OUTBOUND'||explicit==='INBOUND')return explicit;return String(prop(lane,'Direction','')).toUpperCase()==='REVERSE'?'OUTBOUND':'INBOUND';}
 function applySavedSymbolProfile(assemblyId){if(!assemblyId)return;const profile=arm.symbolProfiles.find(x=>String(prop(x,'AssemblyId')).toLowerCase()===String(assemblyId).toLowerCase());if(!profile)return;const lanes=arr(ci(profile,'Lanes'));for(const c of document.querySelectorAll('#tabKyHieuBlock .b4-lane-card')){const role=c.dataset.direction==='out'?'OUTBOUND':'INBOUND',laneId=canonicalLaneIdFromCard(c),idx=Number(c.dataset.laneIndex||0)+1,side=c.dataset.sourceSide||'';const lane=lanes.find(x=>symbolTrafficRole(x)===role&&String(prop(x,'LaneId')).toUpperCase()===laneId)||lanes.find(x=>symbolTrafficRole(x)===role&&Number(prop(x,'LaneIndex'))===idx&&String(prop(x,'Side')).toLowerCase()===String(side).toLowerCase());if(!lane)continue;const e76=c.querySelector('.b4-lane-76'),e93=c.querySelector('.b4-lane-93');if(e76)e76.value=prop(lane,'Enable76',true)?'1':'0';if(e93)e93.value=prop(lane,'Enable93',true)?String(prop(lane,'Movement','STRAIGHT')).toLowerCase():'none';}const dirty=$('b4ProfileDirty');if(dirty){dirty.hidden=true;delete dirty.dataset.dirty;}}
 const armUiChangeTab4Profile=window.changeTab4AssemblyProfile;window.changeTab4AssemblyProfile=function(id){const r=armUiChangeTab4Profile?.(id);setTimeout(()=>applySavedSymbolProfile(id),0);return r;};
 window.saveTab4AssemblyProfile=()=>{const assemblyId=txt('b4AssemblyProfileSelect');if(!assemblyId)return toast('Chọn MCN trước.','warning');const cards=[...document.querySelectorAll('#tabKyHieuBlock .b4-lane-card')];const lanes=cards.map((c,i)=>{const trafficRole=c.dataset.direction==='out'?'OUTBOUND':'INBOUND',laneId=canonicalLaneIdFromCard(c);return {laneId,side:c.dataset.sourceSide||'',laneIndex:Number(c.dataset.laneIndex||i)+1,enable76:c.querySelector('.b4-lane-76')?.value==='1',enable93:(c.querySelector('.b4-lane-93')?.value||'none')!=='none',movement:(c.querySelector('.b4-lane-93')?.value||'STRAIGHT').replace(/^none$/,'STRAIGHT').toUpperCase(),trafficRole};});post('SaveSymbolProfile',{profile:{id:`SP_${assemblyId}`,assemblyId,name:`Profile ${assemblyId}`,lanes}});};
 window.analyzeSymbolPlacement=()=>{const dirty=$('b4ProfileDirty');if(dirty?.dataset.dirty==='true')return toast('Cấu hình MCN đang thay đổi. Hãy LƯU PROFILE trước khi phân tích toàn bộ nút giao.','warning');if(!effectiveCrossSectionsUi().length)return toast('Chưa có MCN đã đồng bộ từ Tab 2.','warning');post('AnalyzeSymbolBlockPlacement',{analyzeAll:true,rules:blockRules()});};
-function renderProposals(){const f=txt('b4ResultType','all'),st=txt('b4ResultStatus','all');const rows=arm.proposals.filter(p=>(f==='all'||String(prop(p,'Code'))===f)&&(st==='all'||String(prop(p,'Status')).toLowerCase()===st.toLowerCase()));const b=$('b4PlacementBody');if(b)b.innerHTML=rows.length?rows.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(prop(p,'Road'))}</td><td>${esc(prop(p,'Approach'))}</td><td>${esc(prop(p,'Approach'))}</td><td>${esc(prop(p,'Direction'))}</td><td>${esc(prop(p,'Lane'))}</td><td>${esc(prop(p,'Code'))}</td><td>${esc(prop(p,'Movement'))}</td><td>${esc(prop(p,'Block'))}</td><td>${esc(prop(p,'Code')==='7.6'?'7.3':txt('b4Anchor93','7.1'))}</td><td>${esc(prop(p,'Cluster'))}</td><td>${esc(prop(p,'Station'))}</td><td>${esc(prop(p,'Status'))}</td><td><button class="btn-outline" onclick="window.armZoomProposal('${esc(prop(p,'Id'))}')">—</button></td><td><input type="checkbox" ${prop(p,'Selected',true)?'checked':''} onchange="window.armSelectProposal('${esc(prop(p,'Id'))}',this.checked)"></td></tr>`).join(''):'<tr><td colspan="15" class="b4-empty-cell">Chưa có đề xuất.</td></tr>';setText('b4ProposalCount',arm.proposals.length);setText('b4SelectedCount',arm.proposals.filter(p=>prop(p,'Selected',true)).length);setText('b4Count76',arm.proposals.filter(p=>prop(p,'Code')==='7.6').length);setText('b4Count93',arm.proposals.filter(p=>prop(p,'Code')==='9.3').length);setText('b4ProposalSummary',arm.proposals.length);if($('b4GenerateBtn'))$('b4GenerateBtn').disabled=!arm.proposals.some(p=>prop(p,'Selected',true));}
+function proposalStatusKey(p){
+  if(prop(p,'IsOverride',false)) return 'override';
+  const raw=String(prop(p,'Status','')).toLowerCase();
+  if(raw.includes('generated')||raw.includes('đã tạo')) return 'generated';
+  if(raw.includes('warning')||raw.includes('cảnh')||raw.includes('error')||raw.includes('lỗi')) return 'warning';
+  if(raw.includes('override')||raw.includes('đã chỉnh')) return 'override';
+  return 'valid';
+}
+function proposalStatusLabel(p){
+  const key=proposalStatusKey(p);
+  return key==='generated'?'ĐÃ TẠO':key==='warning'?'CẦN KIỂM TRA':key==='override'?'ĐÃ CHỈNH':'HỢP LỆ';
+}
+function proposalRoadKey(p){return String(prop(p,'RoadKey',prop(p,'Road','')));}
+function refreshProposalRoadFilter(){
+  const select=$('b4ResultRoad'); if(!select)return;
+  const previous=select.value||'all';
+  const roads=[...new Map(arm.proposals.map(p=>[proposalRoadKey(p),String(prop(p,'Road',proposalRoadKey(p)))])).entries()].filter(x=>x[0]).sort((a,b)=>a[1].localeCompare(b[1],'vi'));
+  select.innerHTML='<option value="all">Tất cả tuyến</option>'+roads.map(([key,name])=>`<option value="${esc(key)}">${esc(name)}</option>`).join('');
+  select.value=roads.some(([key])=>key===previous)?previous:'all';
+}
+function getFilteredSymbolProposals(){
+  const road=txt('b4ResultRoad','all'),type=txt('b4ResultType','all'),status=txt('b4ResultStatus','all');
+  return arm.proposals.filter(p=>
+    (road==='all'||proposalRoadKey(p)===road)&&
+    (type==='all'||String(prop(p,'Code'))===type)&&
+    (status==='all'||proposalStatusKey(p)===status)
+  );
+}
+function proposalDisplayMeta(p){
+  const approach=String(prop(p,'Approach',''));
+  const parts=approach.split('|');
+  const inboundDirection=String(parts[2]||'').toUpperCase();
+  const actualDirection=String(prop(p,'Direction','')).toUpperCase();
+  const code=String(prop(p,'Code',''));
+  const cluster=Math.max(1,Number(prop(p,'Cluster',1))||1);
+  const outbound=!!inboundDirection&&!!actualDirection&&actualDirection!==inboundDirection;
+  const anchor=code==='7.6'?'7.3':txt('b4Anchor93','71')==='73'?'7.3':'7.1';
+  const base=code==='7.6'?num('b4Distance76',30):(outbound?num('b4OutDistance93',15):num('b4FirstDistance93',20));
+  const distance=code==='7.6'?base:base+(cluster-1)*num('b4ClusterSpacing93',25);
+  return {branch:inboundDirection||'—',direction:actualDirection||'—',anchor,distance,node:String(prop(p,'NodeId',''))};
+}
+function renderProposals(){
+  refreshProposalRoadFilter();
+  const rows=getFilteredSymbolProposals();
+  const b=$('b4PlacementBody');
+  if(b)b.innerHTML=rows.length?rows.map((p,i)=>{
+    const m=proposalDisplayMeta(p),status=proposalStatusKey(p),statusLabel=proposalStatusLabel(p);
+    const movement=String(prop(p,'Code'))==='7.6'?'—':String(prop(p,'Movement','—')).replaceAll('_',' + ');
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${esc(prop(p,'Road'))}</strong><small>${esc(m.node||prop(p,'RoadKey',''))}</small></td>
+      <td>${esc(m.branch)}</td>
+      <td>${esc(m.direction)}</td>
+      <td>${esc(prop(p,'Lane'))}</td>
+      <td>${esc(prop(p,'Code'))}</td>
+      <td title="${esc(prop(p,'Block',''))}">${esc(movement)}</td>
+      <td>${esc(m.anchor)}</td>
+      <td>${esc(Number(m.distance).toFixed(2))}</td>
+      <td>${esc(prop(p,'Station'))}</td>
+      <td><span class="b4u-status ${status}">${statusLabel}</span></td>
+      <td><button class="btn-outline" onclick="window.armZoomProposal('${esc(prop(p,'Id'))}')">⌖</button></td>
+      <td><input type="checkbox" ${prop(p,'Selected',true)?'checked':''} onchange="window.armSelectProposal('${esc(prop(p,'Id'))}',this.checked)"></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="13" class="b4-empty-cell">Không có đề xuất phù hợp bộ lọc.</td></tr>';
+
+  const warningCount=arm.proposals.filter(p=>proposalStatusKey(p)==='warning').length;
+  const generatedCount=arm.proposals.filter(p=>proposalStatusKey(p)==='generated').length;
+  const overrideCount=arm.proposals.filter(p=>proposalStatusKey(p)==='override').length;
+  setText('b4ProposalCount',`${arm.proposals.length} vị trí`);
+  setText('b4SelectedCount',arm.proposals.filter(p=>prop(p,'Selected',true)).length);
+  setText('b4Count76',arm.proposals.filter(p=>prop(p,'Code')==='7.6').length);
+  setText('b4Count93',arm.proposals.filter(p=>prop(p,'Code')==='9.3').length);
+  setText('b4WarningCount',warningCount);
+  setText('b4GeneratedFooterCount',generatedCount);
+  setText('b4OverrideFooterCount',overrideCount);
+  setText('b4ProposalSummary',arm.proposals.length);
+  if($('b4GenerateBtn'))$('b4GenerateBtn').disabled=!arm.proposals.some(p=>prop(p,'Selected',true));
+}
 window.renderSymbolProposals=renderProposals;window.filterSymbolProposals=renderProposals;
 window.armSelectProposal=(id,on)=>{const p=arm.proposals.find(x=>String(prop(x,'Id'))===String(id));if(p)p.Selected=on;renderProposals();};
-window.selectAllSymbolProposals=on=>{arm.proposals.forEach(p=>p.Selected=on);renderProposals();};
+window.selectAllSymbolProposals=on=>{getFilteredSymbolProposals().forEach(p=>p.Selected=on);renderProposals();};
+window.armZoomProposal=id=>{
+  const p=arm.proposals.find(x=>String(prop(x,'Id'))===String(id)); if(!p)return;
+  const comparisonId=String(prop(p,'Approach','')).split('|')[0];
+  if(comparisonId)post('ZoomComparisonResult',{recordId:comparisonId});
+};
 window.generateSymbolBlocks=()=>{const selected=arm.proposals.filter(p=>prop(p,'Selected',true));if(!selected.length)return toast('Chưa chọn đề xuất.','warning');post('GenerateSymbolBlocksCAD',{blockReferences:selected});};
 
 // -----------------------------------------------------------------------------

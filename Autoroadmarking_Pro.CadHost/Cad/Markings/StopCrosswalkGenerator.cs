@@ -372,27 +372,30 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                 return 0;
             }
 
-            double roadWidth = rightLimit - leftLimit;
-            if (roadWidth < stripeWidth)
+            double commonRoadWidth = rightLimit - leftLimit;
+            if (commonRoadWidth <= 0.50)
             {
-                error = "Khoảng giữa hai MÉP CAD nhỏ hơn bề rộng một dải 7.3.";
+                error = "Khoảng giữa hai MÉP CAD không đủ để sinh vạch 7.3.";
                 return 0;
             }
 
+            // Mẫu 1 ngựa vằn: mỗi dải sơn chạy NGANG giữa hai mép đường.
+            // Các dải được xếp dọc theo station trong phạm vi crossingLength (3/4/5... m).
+            // Không được lấy bề rộng mặt đường để tính số dải như thuật toán cũ.
             double pitch = stripeWidth + stripeGap;
             int stripeCount = stripeGap <= 1e-9
-                ? Math.Max(1, (int)Math.Floor(roadWidth / stripeWidth))
-                : Math.Max(1, (int)Math.Floor((roadWidth + stripeGap) / pitch));
+                ? Math.Max(1, (int)Math.Floor(crossingLength / stripeWidth))
+                : Math.Max(1, (int)Math.Floor((crossingLength + stripeGap) / pitch));
 
             double occupied = stripeCount * stripeWidth + Math.Max(0, stripeCount - 1) * stripeGap;
-            while (stripeCount > 1 && occupied > roadWidth + 1e-9)
+            while (stripeCount > 1 && occupied > crossingLength + 1e-9)
             {
                 stripeCount--;
                 occupied = stripeCount * stripeWidth + Math.Max(0, stripeCount - 1) * stripeGap;
             }
 
-            double sideMargin = Math.Max(0.0, (roadWidth - occupied) * 0.5);
-            double firstLateralOffset = leftLimit + sideMargin + stripeWidth * 0.5;
+            double longitudinalMargin = Math.Max(0.0, (crossingLength - occupied) * 0.5);
+            List<string> edgeCandidates = BuildCrosswalkEdgeCandidates(state, polygon, tr, comparison);
 
             string generationPrefix = BuildGenerationKey(
                 comparison, ownerId, approachDirection, template.Code);
@@ -403,24 +406,49 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
             for (int i = 0; i < stripeCount; i++)
             {
-                double lateralOffset = firstLateralOffset + i * pitch;
+                double stripeCenterDistance =
+                    longitudinalMargin + stripeWidth * 0.5 + i * pitch;
+                double stripeStation =
+                    innerStation + outwardSign * stripeCenterDistance;
 
-                // IMPORTANT: both endpoints use the SAME lateral offset.
-                // Therefore the painted bar follows the longitudinal direction of the approach,
-                // while bars themselves are arrayed transversely across the carriageway.
-                Point3d inner = _station.PointAtStationOffset(
-                    axis, innerStation, lateralOffset, out Vector3d tangentInner);
-                Point3d outer = _station.PointAtStationOffset(
-                    axis, outerStation, lateralOffset, out Vector3d tangentOuter);
+                // Mỗi dải 7.3 phải chạy NGANG qua phần xe chạy tại đúng station của dải.
+                // Ưu tiên cặp MÉP thật tại station đó; nếu một giao cắt cục bộ bị hụt do
+                // vertex/tangent, dùng miền chung đã kiểm chứng ở toàn bộ vùng 7.3 làm fallback.
+                double stripeLeft = leftLimit;
+                double stripeRight = rightLimit;
+                if (TryResolveRoadEdgesAtStation(
+                        db,
+                        tr,
+                        axis,
+                        comparison,
+                        edgeCandidates,
+                        stripeStation,
+                        out double localA,
+                        out double localB,
+                        out _))
+                {
+                    double localLeft = Math.Min(localA, localB);
+                    double localRight = Math.Max(localA, localB);
+                    if (localRight - localLeft > 0.50)
+                    {
+                        stripeLeft = localLeft;
+                        stripeRight = localRight;
+                    }
+                }
 
-                if (inner.DistanceTo(outer) <= 1e-6)
+                Point3d left = _station.PointAtStationOffset(
+                    axis, stripeStation, stripeLeft, out _);
+                Point3d right = _station.PointAtStationOffset(
+                    axis, stripeStation, stripeRight, out _);
+
+                if (left.DistanceTo(right) <= 1e-6)
                     continue;
 
                 string generationKey = generationPrefix + "|STRIPE|" + (i + 1).ToString(CultureInfo.InvariantCulture);
 
                 var polyline = new Polyline();
-                polyline.AddVertexAt(0, new Point2d(inner.X, inner.Y), 0.0, stripeWidth, stripeWidth);
-                polyline.AddVertexAt(1, new Point2d(outer.X, outer.Y), 0.0, stripeWidth, stripeWidth);
+                polyline.AddVertexAt(0, new Point2d(left.X, left.Y), 0.0, stripeWidth, stripeWidth);
+                polyline.AddVertexAt(1, new Point2d(right.X, right.Y), 0.0, stripeWidth, stripeWidth);
                 polyline.ConstantWidth = stripeWidth;
                 polyline.Plinegen = true;
 
@@ -447,14 +475,14 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                     TemplateId = template.Id,
                     TemplateLayer = template.Layer,
                     CadLayer = polyline.Layer,
-                    Station = innerStation + outwardSign * crossingLength * 0.5,
+                    Station = stripeStation,
                     Width = stripeWidth,
                     Extra = new Dictionary<string, string>
                     {
                         ["PaintRatio"] = "1",
                         ["Pattern"] = "CONTINUOUS_GEOMETRY",
                         ["ApproachDirection"] = approachDirection,
-                        ["GeometryType"] = "PEDESTRIAN_CROSSWALK_ZEBRA_LONGITUDINAL_BARS",
+                        ["GeometryType"] = "PEDESTRIAN_CROSSWALK_ZEBRA_TRANSVERSE_BARS",
                         ["CrosswalkModel"] = "1",
                         ["CrossingWidth"] = crossingLength.ToString("0.########", CultureInfo.InvariantCulture),
                         ["CrossingLength"] = crossingLength.ToString("0.########", CultureInfo.InvariantCulture),
@@ -464,12 +492,14 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                         ["LateralLimitSource"] = "SELECTED_ROAD_EDGES",
                         ["LeftEdgeHandle"] = comparison.LeftEdgeHandle ?? string.Empty,
                         ["RightEdgeHandle"] = comparison.RightEdgeHandle ?? string.Empty,
-                        ["PlacementSide"] = "OUTSIDE_INTERSECTION",
+                        ["PlacementSide"] = "CENTERED_ON_STEP2_POLYGON_AXIS_INTERSECTION",
                         ["StripeWidth"] = stripeWidth.ToString("0.########", CultureInfo.InvariantCulture),
                         ["StripeGap"] = stripeGap.ToString("0.########", CultureInfo.InvariantCulture),
                         ["StripeIndex"] = (i + 1).ToString(CultureInfo.InvariantCulture),
                         ["StripeCount"] = stripeCount.ToString(CultureInfo.InvariantCulture),
-                        ["StripeLateralOffset"] = lateralOffset.ToString("0.########", CultureInfo.InvariantCulture),
+                        ["StripeStation"] = stripeStation.ToString("0.########", CultureInfo.InvariantCulture),
+                        ["StripeLeftOffset"] = stripeLeft.ToString("0.########", CultureInfo.InvariantCulture),
+                        ["StripeRightOffset"] = stripeRight.ToString("0.########", CultureInfo.InvariantCulture),
                         ["QuantityCategory"] = "INTERSECTION_CROSSWALK",
                         ["QuantityGroup"] = "VACH_DI_BO",
                         ["QuantityRole"] = "CROSSWALK_7_3",

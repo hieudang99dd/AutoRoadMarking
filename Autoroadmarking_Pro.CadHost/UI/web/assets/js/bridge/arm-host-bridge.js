@@ -31,6 +31,7 @@ const arm = {
   pendingPick: '',
   tab2EditingId: '',
   pendingCrossSectionImport: [],
+  pendingCadActions: new Set(),
   quantityOwnerType: 'all',
   lastResultAction: '',
   pendingDrawSubAction: '',
@@ -44,10 +45,38 @@ function setCadStatus(ok, text){
     e.className=`status-pill ${ok?'status-ready':'status-wait'}`;
   });
 }
+const singleFlightCadActions = new Set([
+  'DrawMarkingsCAD',
+  'GenerateBatchApproachLinesCAD',
+  'AutoMatchCAD',
+  'RefreshPipelineFromCad',
+  'Tab1_ApplySharedLayerSet',
+  'SyncSelectedCrossSections',
+  'GenerateSymbolBlocksCAD',
+  'GenerateSpeedHump',
+  'SyncSupplementaryBlocks',
+  'ReadMarkingQuantitiesCAD',
+  'ExportMarkingQuantitiesExcel'
+]);
+
 function post(action,payload={}){
   if(!arm.host){ toast('Đang chạy preview ngoài Civil 3D; không có C# host.','warning'); return false; }
-  try{ window.chrome.webview.postMessage({action,payload}); return true; }
-  catch(err){ toast(`Không gửi được ${action}: ${err.message}`,'error'); return false; }
+
+  if(singleFlightCadActions.has(action) && arm.pendingCadActions.has(action)){
+    toast('Tác vụ CAD này đang chạy. Hãy chờ kết quả hiện tại hoàn tất trước khi bấm lại.','warning');
+    return false;
+  }
+
+  try{
+    if(singleFlightCadActions.has(action)) arm.pendingCadActions.add(action);
+    window.chrome.webview.postMessage({action,payload});
+    return true;
+  }
+  catch(err){
+    arm.pendingCadActions.delete(action);
+    toast(`Không gửi được ${action}: ${err.message}`,'error');
+    return false;
+  }
 }
 function markCadPick(title,detail){ window.setCadInteractionState?.({active:true,title,detail}); }
 function clearCadPick(){ window.setCadInteractionState?.({active:false}); }
@@ -70,6 +99,7 @@ function onHostMessage(message){
   if(!message || typeof message!=='object')return;
   const action=backendAction(message), data=backendData(message), success=backendSuccess(message), msg=backendMessage(message);
   if(ci(data,'queued')===true) return; // ACK from router; real CAD result follows.
+  arm.pendingCadActions.delete(action);
   arm.lastResultAction=action;
   clearCadPick();
   if(action==='LoadDefaultCrossSectionLibrary'){

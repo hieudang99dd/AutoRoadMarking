@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using Autodesk.AutoCAD.ApplicationServices;
 
 using AcApp = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
@@ -8,6 +9,7 @@ namespace Autoroadmarking_Pro.CadHost.Commands
 {
     internal sealed class QueuedCadRequest
     {
+        public Document? Document { get; set; }
         public string Action { get; set; } = string.Empty;
         public JsonElement Payload { get; set; }
     }
@@ -32,6 +34,7 @@ namespace Autoroadmarking_Pro.CadHost.Commands
 
             Queue.Enqueue(new QueuedCadRequest
             {
+                Document = doc,
                 Action = action ?? string.Empty,
                 Payload = payload.ValueKind == JsonValueKind.Undefined
                     ? default
@@ -42,12 +45,43 @@ namespace Autoroadmarking_Pro.CadHost.Commands
             return true;
         }
 
+        // Compatibility overload: giữ build ổn định nếu RoadMarkingCommands cũ
+        // vẫn gọi TryDequeue(out request). Request vẫn bị khóa theo active document.
         public static bool TryDequeue(out QueuedCadRequest request)
         {
-            if (Queue.TryDequeue(out QueuedCadRequest? item) && item != null)
+            Document? document = AcApp.DocumentManager.MdiActiveDocument;
+            if (document == null)
             {
-                request = item;
-                return true;
+                request = new QueuedCadRequest();
+                return false;
+            }
+
+            return TryDequeue(document, out request);
+        }
+
+        public static bool TryDequeue(Document document, out QueuedCadRequest request)
+        {
+            if (document == null)
+            {
+                request = new QueuedCadRequest();
+                return false;
+            }
+
+            // Queue dùng chung cho toàn plugin nhưng mỗi request phải chạy đúng DWG đã phát lệnh.
+            // Quét tối đa số phần tử hiện có và xoay request của document khác về cuối queue.
+            int attempts = Queue.Count;
+            for (int i = 0; i < attempts; i++)
+            {
+                if (!Queue.TryDequeue(out QueuedCadRequest? item) || item == null)
+                    break;
+
+                if (SameDocument(item.Document, document))
+                {
+                    request = item;
+                    return true;
+                }
+
+                Queue.Enqueue(item);
             }
 
             request = new QueuedCadRequest();
@@ -67,20 +101,50 @@ namespace Autoroadmarking_Pro.CadHost.Commands
             if (Interlocked.CompareExchange(ref _scheduled, 1, 0) != 0)
                 return;
 
-            var doc = AcApp.DocumentManager.MdiActiveDocument;
-
-            if (doc == null)
+            if (!Queue.TryPeek(out QueuedCadRequest? next) || next?.Document == null)
             {
                 Interlocked.Exchange(ref _scheduled, 0);
                 return;
             }
 
-            // Gửi command nội bộ vào AutoCAD để có document/command context hợp lệ.
-            doc.SendStringToExecute(
-                CommandNames.InternalExec + "\n",
-                true,
-                false,
-                false);
+            Document doc = next.Document;
+
+            try
+            {
+                // Gửi command nội bộ đúng vào document đã tạo request.
+                // Không dùng MdiActiveDocument ở đây: nếu đổi tab DWG giữa lúc UI gửi lệnh
+                // và lúc AutoCAD nhận command, request vẫn không được phép chạy nhầm bản vẽ.
+                doc.SendStringToExecute(
+                    CommandNames.InternalExec + "\n",
+                    true,
+                    false,
+                    false);
+            }
+            catch
+            {
+                // Document có thể đã đóng trước khi command được schedule. Bỏ request đầu
+                // bị stale rồi tiếp tục với request còn lại thay vì khóa queue vĩnh viễn.
+                Queue.TryDequeue(out _);
+                Interlocked.Exchange(ref _scheduled, 0);
+
+                if (!Queue.IsEmpty)
+                    ScheduleIfNeeded();
+            }
+        }
+
+        private static bool SameDocument(Document? first, Document second)
+        {
+            if (first == null) return false;
+            if (ReferenceEquals(first, second)) return true;
+
+            try
+            {
+                return ReferenceEquals(first.Database, second.Database);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

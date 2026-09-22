@@ -196,6 +196,46 @@ def main() -> int:
     if 'ResolveBullhornEndStation(' in stop_cross:
         fail('Generator 7.3 vẫn còn heuristic ResolveBullhornEndStation trong source.')
 
+    # 7.3 Mẫu 1: dải sơn phải chạy ngang giữa hai MÉP, xếp theo station trong crossingLength.
+    for token in (
+        'PEDESTRIAN_CROSSWALK_ZEBRA_TRANSVERSE_BARS',
+        'double stripeStation =',
+        'axis, stripeStation, stripeLeft',
+        'axis, stripeStation, stripeRight',
+        'Math.Floor((crossingLength + stripeGap) / pitch)',
+    ):
+        if token not in stop_cross:
+            fail(f'Generator 7.3 chưa khóa hình học zebra ngang đúng chuẩn: thiếu {token}.')
+    if 'PEDESTRIAN_CROSSWALK_ZEBRA_LONGITUDINAL_BARS' in stop_cross:
+        fail('Generator 7.3 vẫn còn contract dải zebra chạy dọc TIM.')
+    if 'Math.Floor((roadWidth + stripeGap) / pitch)' in stop_cross:
+        fail('Generator 7.3 vẫn tính số dải theo bề rộng mặt đường thay vì crossingLength.')
+
+    # Khoảng cách 7.3 -> 7.1 của dự án được khóa là TIM-ĐẾN-TIM.
+    if 'double stopStation = crosswalkAnchorStation + outwardSign * distance;' not in stop_cross:
+        fail('Generator 7.1/7.3 không còn giữ khoảng cách tim-đến-tim.')
+    if 'Khoảng cách tim 7.3 → tim 7.1' not in html:
+        fail('UI Tab 3 chưa thể hiện rõ khoảng cách 7.3↔7.1 là tim-đến-tim.')
+
+    # Queue WebView -> CAD phải gắn request với đúng Document và UI chặn gửi lặp tác vụ nặng.
+    queue_path = ROOT / 'Autoroadmarking_Pro.CadHost' / 'Commands' / 'CadCommandQueue.cs'
+    command_path = ROOT / 'Autoroadmarking_Pro.CadHost' / 'Commands' / 'RoadMarkingCommands.cs'
+    if not queue_path.exists() or not command_path.exists():
+        fail('Thiếu CadCommandQueue/RoadMarkingCommands.')
+    else:
+        queue_text = queue_path.read_text(encoding='utf-8')
+        command_text = command_path.read_text(encoding='utf-8')
+        for token in ('public Document? Document', 'TryDequeue(Document document', 'Document = doc', 'SameDocument('):
+            if token not in queue_text:
+                fail(f'CadCommandQueue chưa khóa request theo DWG: thiếu {token}.')
+        if 'CadCommandQueue.TryDequeue(out QueuedCadRequest request)' not in command_text and \
+           'CadCommandQueue.TryDequeue(commandDocument, out QueuedCadRequest request)' not in command_text:
+            fail('ARM_INTERNAL_EXEC chưa dequeue request qua CadCommandQueue.')
+        if 'return TryDequeue(document, out request);' not in queue_text:
+            fail('Overload TryDequeue tương thích chưa chuyển tiếp qua document-bound dequeue.')
+    if 'singleFlightCadActions' not in js_text or 'arm.pendingCadActions.has(action)' not in js_text:
+        fail('WebView chưa chặn gửi lặp các CAD action nặng.')
+
     longitudinal = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'LongitudinalMarkingGenerator.cs').read_text(encoding='utf-8')
     if 'DUPLICATE_ON_CROSS_SECTION' not in longitudinal or 'RequiresDoublePresentation' not in longitudinal:
         fail('Vạch 1.3 chưa được nhân đôi theo presentation rule khi sinh hình học.')
@@ -349,7 +389,9 @@ def main() -> int:
     print(f' - Node syntax check: {"pass" if node else "skipped (node unavailable)"}')
     print(' - Tab 1: typed pattern/reference separated from project metadata')
     print(' - Tab 1: reserved metadata keys validated by backend policy + bundled CSV')
-    print(' - 7.1↔7.3: configurable, no hard maximum 3 m')
+    print(' - 7.1↔7.3: configurable, center-to-center contract preserved')
+    print(' - 7.3 zebra: transverse bars, stripe count driven by crossing length')
+    print(' - CAD queue: document-bound + heavy-action single-flight')
     print(' - DWG state schema: 11')
     print(' - build/cache directories: none')
     return 0

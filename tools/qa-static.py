@@ -6,6 +6,7 @@ import re
 import sys
 import csv
 import json
+import hashlib
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -76,6 +77,73 @@ def scan_csharp(path: Path) -> None:
         fail(f"C# lexical state chưa đóng: {path.relative_to(ROOT)} ({state})")
     if stack:
         fail(f"C# delimiter chưa đóng: {path.relative_to(ROOT)} {stack[-1]}")
+
+
+TEXT_EXTENSIONS = {
+    '.cs', '.csproj', '.slnx', '.xaml', '.html', '.css', '.js', '.json',
+    '.csv', '.md', '.txt', '.ps1', '.py', '.yml', '.yaml', '.xml',
+    '.props', '.targets', '.gitignore'
+}
+EXCLUDED_DIRS = {'.git', 'bin', 'obj', '.vs'}
+MANIFEST_NAME = 'SOURCE_MANIFEST.sha256'
+
+
+def source_files() -> list[Path]:
+    result: list[Path] = []
+    for path in ROOT.rglob('*'):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(ROOT)
+        if any(part in EXCLUDED_DIRS for part in rel.parts):
+            continue
+        if rel.as_posix() == MANIFEST_NAME:
+            continue
+        result.append(path)
+    return sorted(result, key=lambda p: p.relative_to(ROOT).as_posix().lower())
+
+
+def manifest_digest(path: Path) -> str:
+    data = path.read_bytes()
+    suffix = path.suffix.lower()
+    if suffix in TEXT_EXTENSIONS or path.name in {'.gitignore', '.gitattributes'}:
+        data = data.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+    return hashlib.sha256(data).hexdigest()
+
+
+def verify_manifest() -> None:
+    manifest = ROOT / MANIFEST_NAME
+    if not manifest.exists():
+        fail('Thiếu SOURCE_MANIFEST.sha256.')
+        return
+
+    entries: dict[str, str] = {}
+    for line_no, line in enumerate(manifest.read_text(encoding='utf-8').splitlines(), start=1):
+        if not line.strip():
+            continue
+        match = re.fullmatch(r'([0-9a-f]{64})\s{2}(.+)', line)
+        if not match:
+            fail(f'Manifest sai định dạng dòng {line_no}.')
+            continue
+        entries[match.group(2).replace('\\', '/')] = match.group(1)
+
+    current = {
+        p.relative_to(ROOT).as_posix(): manifest_digest(p)
+        for p in source_files()
+    }
+
+    missing = sorted(set(current) - set(entries))
+    stale = sorted(set(entries) - set(current))
+    changed = sorted(
+        path for path in set(current) & set(entries)
+        if current[path] != entries[path]
+    )
+
+    if missing:
+        fail('Manifest thiếu file: ' + ', '.join(missing[:20]))
+    if stale:
+        fail('Manifest còn file không tồn tại: ' + ', '.join(stale[:20]))
+    if changed:
+        fail('Manifest có SHA stale: ' + ', '.join(changed[:20]))
 
 
 class UiParser(HTMLParser):
@@ -188,9 +256,39 @@ def main() -> int:
             fail('CadLinetypeService chưa xử lý đầy đủ CUSTOM_REAL/geometry-driven.')
 
     stop_cross = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'StopCrosswalkGenerator.cs').read_text(encoding='utf-8')
-    for token in ('CreateCrosswalkZebra', 'PEDESTRIAN_CROSSWALK_ZEBRA', '["PaintRatio"] = "1"'):
+    for token in (
+        'CreateCrosswalkZebra',
+        'PEDESTRIAN_CROSSWALK_ZEBRA',
+        '["PaintRatio"] = "1"',
+        'STEP2_POLYGON_AXIS_INTERSECTION',
+        'PlanStopCrosswalk('
+    ):
         if token not in stop_cross:
-            fail(f'Generator 7.3 thiếu {token}.')
+            fail(f'Generator 7.3 thiếu contract/token {token}.')
+    if 'ResolveBullhornEndStation' in stop_cross:
+        fail('Generator 7.3 đã quay lại heuristic ResolveBullhornEndStation; Step 2 phải là reference chính thức.')
+    if 'crosswalkAnchorStation = boundaryStation' not in stop_cross:
+        fail('Generator 7.3 không dùng trực tiếp boundaryStation của Step 2 làm anchor.')
+
+    batch_path = ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'BatchApproachLaneGenerator.cs'
+    if not batch_path.exists():
+        fail('Thiếu BatchApproachLaneGenerator.cs cho Bước 5.')
+        batch = ''
+    else:
+        batch = batch_path.read_text(encoding='utf-8')
+        for token in (
+            'PlanApproachSegment(',
+            'SEGMENT_BEFORE_STOP_NO_CLAMP',
+            '"1.1"',
+            '"1.2"',
+            '"2.1"',
+            '"2.2"',
+            'IsCenterLineCode(code) ? "CENTER_LINE" : "LANE_LINE"'
+        ):
+            if token not in batch:
+                fail(f'Bước 5 thiếu contract/token {token}.')
+        if 'startStation = Math.Max(axisStart' in batch or 'endStation = Math.Min(axisEnd' in batch:
+            fail('Bước 5 vẫn silent-clamp station vào endpoint RoadAxis.')
 
     longitudinal = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'LongitudinalMarkingGenerator.cs').read_text(encoding='utf-8')
     if 'DUPLICATE_ON_CROSS_SECTION' not in longitudinal or 'RequiresDoublePresentation' not in longitudinal:
@@ -246,11 +344,26 @@ def main() -> int:
     if 'GTT' in web_text:
         fail('UI web vẫn còn mã GTT cũ.')
 
+    expected_step5_options = (
+        '<option value="1.1">Vạch 1.1 (Tim đường - Nét đứt)</option>',
+        '<option value="1.2">Vạch 1.2 (Tim đường - Nét liền)</option>',
+        '<option value="2.1" selected>Vạch 2.1 (Phân làn - Nét đứt)</option>',
+        '<option value="2.2">Vạch 2.2 (Phân làn - Nét liền)</option>'
+    )
+    for option in expected_step5_options:
+        if option not in html:
+            fail('UI Bước 5 sai mô tả liền/đứt: ' + option)
+
     state_text = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'State' / 'ArmProjectState.cs').read_text(encoding='utf-8')
     if 'SchemaVersion { get; set; } = 11' not in state_text:
         fail('ArmProjectState chưa dùng DWG state schema 11.')
-    if 'normalizedCode == "7.3" || normalizedCode == "GGT"' not in (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'State' / 'DwgProjectStateStore.cs').read_text(encoding='utf-8'):
+    state_store_text = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'State' / 'DwgProjectStateStore.cs').read_text(encoding='utf-8')
+    if 'normalizedCode == "7.3" || normalizedCode == "GGT"' not in state_store_text:
         fail('Migration chưa ép QuantityMethod GENERATED cho 7.3/GGT.')
+    if 'template.Code.Equals("GTT"' not in state_store_text or 'template.Code = "GGT"' not in state_store_text:
+        fail('Migration legacy GTT -> canonical GGT chưa đầy đủ.')
+    if 'template.Code.Equals("GGT"' in state_store_text and 'template.Code = "GTT"' in state_store_text:
+        fail('Migration đang đảo canonical GGT về GTT.')
 
     if 'SyncSelectedCrossSections' not in executor:
         fail('Thiếu backend action SyncSelectedCrossSections cho nút ĐỒNG BỘ MẶT CẮT ĐÃ CHỌN.')
@@ -262,6 +375,13 @@ def main() -> int:
     bad_dirs = [p for name in ('bin', 'obj', '.vs') for p in ROOT.rglob(name) if p.is_dir()]
     if bad_dirs:
         fail('Có build/cache directory trong source: ' + ', '.join(str(p.relative_to(ROOT)) for p in bad_dirs[:10]))
+
+    test_project = ROOT / 'Autoroadmarking_Pro.Application.Tests' / 'Autoroadmarking_Pro.Application.Tests.csproj'
+    test_file = ROOT / 'Autoroadmarking_Pro.Application.Tests' / 'Intersections' / 'MarkingPlacementPlannerTests.cs'
+    if not test_project.exists() or not test_file.exists():
+        fail('Thiếu regression tests thuần .NET cho station 7.3/7.1 và Bước 5.')
+
+    verify_manifest()
 
     if ERRORS:
         print('STATIC QA: FAIL')
@@ -278,8 +398,12 @@ def main() -> int:
     print(f' - Node syntax check: {"pass" if node else "skipped (node unavailable)"}')
     print(' - Tab 1: typed pattern/reference separated from project metadata')
     print(' - Tab 1: reserved metadata keys validated by backend policy + bundled CSV')
-    print(' - 7.1↔7.3: configurable, no hard maximum 3 m')
+    print(' - 7.1↔7.3: Step2 anchor + exact requested station distance')
+    print(' - Step 5: 1.1/1.2 centerline, 2.1/2.2 lane boundaries, no station clamp')
+    print(' - GGT: canonical speed-hump code; legacy GTT migrates to GGT')
     print(' - DWG state schema: 11')
+    print(' - regression test project: present')
+    print(' - source manifest: complete and SHA-fresh')
     print(' - build/cache directories: none')
     return 0
 

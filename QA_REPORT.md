@@ -1,50 +1,64 @@
-# QA REPORT · AutoRoadMarking Pro FINAL SOURCE
+# QA REPORT · AutoRoadMarking Pro
 
-## Kết quả static QA trong môi trường đóng gói
+## Trạng thái hiện tại
 
-`python tools/qa-static.py` hiện PASS với:
+Static QA/contract QA trên GitHub Actions đã **PASS** ngày 2026-09-22 cho source trên branch `main`.
 
-- **104** file C#: delimiter/token-state scan pass.
-- XML `.csproj/.slnx/.xaml`: parse pass.
-- `index.html`: **360 id unique**, không duplicate.
+Kết quả run đã xác nhận:
+
+- **105** file C#: delimiter/token-state scan pass.
+- `index.html`: **368 id unique**, không duplicate.
 - **8** JavaScript module: `node --check` pass.
-- UI event `window.*`: không có function literal bị thiếu definition.
-- **51 WebView `post(...)` action literal**: đều có backend handler.
-- **27 `goiAction` aliases**: đều được bridge/backend xử lý.
+- **56 WebView `post(...)` action literal**: đều có backend handler.
+- **28 `goiAction` aliases**: đều được bridge/backend xử lý.
+- Tab 1 typed pattern/reference tách khỏi `CustomProperties`.
+- Reserved metadata keys được backend policy validate.
+- 7.1↔7.3 configurable, không hard-clamp 3 m.
+- DWG state schema hiện tại: **11**.
 - Không đóng gói `bin`, `obj`, `.vs`.
-- DWG state schema: **11**.
 
-## Kiểm tra nghiệp vụ/contract quan trọng
+## Contract đã khóa và đang được QA kiểm tra
 
-1. Tab 1 typed pattern/reference tách khỏi `CustomProperties`.
-2. Reserved metadata keys được backend policy chặn, bao gồm management fields mới.
-3. Bundled CSV có 15 template unique, toàn `CUSTOM_REAL`, có 1.3/7.3/GGT, không GTT.
-4. GGT không còn lặp `code` trong `CustomProperties`.
-5. `CUSTOM_REAL` có CAD linetype service thật; geometry-driven templates được nhận diện riêng.
-6. 1.3 có `RequiresDoublePresentation`/`DUPLICATE_ON_CROSS_SECTION` trong generator.
-7. 7.3 có `CreateCrosswalkZebra`, geometry type `PEDESTRIAN_CROSSWALK_ZEBRA`, stripe metadata paint ratio 1.
-8. 7.1↔7.3 không có hard max 3 m; planner dùng optional warningMaximum và không clamp.
-9. Tab 2 `SyncSelectedCrossSections` là backend action thật; active set persist bằng `ActiveCrossSectionIds` và `GetEffectiveCrossSections()`.
-10. Thay đổi MCN/active set invalidates comparison/block proposal phụ thuộc MCN.
-11. Migration nâng state lên schema 11, GTT→GGT, dọn reserved legacy code và quantity method 7.3/GGT.
+1. **GGT** là mã chính thức cho gờ giảm tốc; legacy `GTT` được migrate sang `GGT`.
+2. CSV bundled phải chứa `1.3`, `7.3`, `GGT` và không còn `GTT`.
+3. 7.3 dùng trực tiếp mốc `STEP2_POLYGON_AXIS_INTERSECTION`.
+4. `StopCrosswalkGenerator` không được khôi phục heuristic `ResolveBullhornEndStation`.
+5. Step 5 hỗ trợ `1.1 / 1.2 / 2.1 / 2.2` với nhãn liền/đứt đúng template.
+6. Step 5 không được silent-clamp candidate vào endpoint của RoadAxis; thiếu chiều dài yêu cầu phải reject.
+7. Step 5 lưu metadata truy vết gồm stop-line anchor, requested distance và station đầu/cuối.
+8. `SOURCE_MANIFEST.sha256` được sinh deterministic từ toàn bộ git-tracked source và được kiểm tra hash trên CI.
 
-## Scenario code-path đã rà soát
+## Manifest / CI
 
-- Alignment native name / Polyline Tab 0 identity.
-- Stable AxisKey khi đổi RoadName.
-- Multi-node + FORWARD/REVERSE approach.
-- Active MCN selection → engineering matcher.
-- Candidate station ngoài domain reject, không clamp.
-- Uniform/cluster station distribution và short segment behavior.
-- Idempotent ARM generation keys.
-- 1.3 double geometry từ single template.
-- 7.3 zebra generated geometry.
-- GGT generated supplementary geometry.
-- Symbol placement 7.6/9.3 từ Node/Approach anchors.
-- Quantity linear/area/count và dirty snapshot.
+Workflow:
 
-## Giới hạn kiểm chứng
+`.github/workflows/qa.yml`
 
-Môi trường hiện tại có Node/Python nhưng **không có `dotnet`, `msbuild`, `csc` và Autodesk managed assemblies**. Vì vậy QA này không thay thế compile/link/NETLOAD thật.
+Manifest generator:
 
-Bước nghiệm thu bắt buộc trên máy Civil 3D được mô tả tại `docs/DEPLOYMENT_CHECKLIST.md`.
+`tools/update-manifest.py`
+
+Static QA:
+
+`tools/qa-static.py`
+
+CI tự tái tạo manifest trước khi QA. Nếu manifest thay đổi trên push, workflow commit lại manifest bằng bot với commit message `chore: refresh source manifest [skip ci]`.
+
+## Những gì PASS này chưa chứng minh
+
+Static QA **không thay thế** runtime qualification trong Autodesk Civil 3D.
+
+Vẫn phải kiểm tra trên máy có Civil 3D:
+
+- build CadHost với Autodesk/Civil references thật;
+- NETLOAD;
+- thao tác WebView2 ↔ command context;
+- sinh polygon nút giao trên DWG thật;
+- 7.3/7.1 ở nút vuông, xiên, T-junction;
+- khoảng cách station thực tế;
+- Step 5 trên Alignment và Polyline;
+- save/close/reopen DWG rồi Sync;
+- regenerate không duplicate;
+- hiệu năng trên bản vẽ lớn.
+
+**Trạng thái:** Static/contract QA PASS · Civil 3D runtime qualification PENDING.

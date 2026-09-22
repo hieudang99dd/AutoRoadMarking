@@ -296,33 +296,7 @@ def main() -> int:
             line = line.strip()
             if not line:
                 continue
-            match = re.match(r'^([0-9a-fA-F]{64})\s{2}(.+)    if bad_dirs:
-        fail('Có build/cache directory trong source: ' + ', '.join(str(p.relative_to(ROOT)) for p in bad_dirs[:10]))
-
-    if ERRORS:
-        print('STATIC QA: FAIL')
-        for err in ERRORS:
-            print(' -', err)
-        return 1
-
-    print('STATIC QA: PASS')
-    print(f' - C# files: {len(cs_files)}')
-    print(f' - HTML ids: {len(parser.ids)} (unique)')
-    print(f' - Modular JS files: {len(js_files)}')
-    print(f' - WebView post actions: {len(posts)} (all handled)')
-    print(f' - goiAction aliases: {len(ui_alias_calls)} (all mapped)')
-    print(f' - Node syntax check: {"pass" if node else "skipped (node unavailable)"}')
-    print(' - Tab 1: typed pattern/reference separated from project metadata')
-    print(' - Tab 1: reserved metadata keys validated by backend policy + bundled CSV')
-    print(' - 7.1↔7.3: configurable, no hard maximum 3 m')
-    print(' - DWG state schema: 11')
-    print(' - build/cache directories: none')
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
-, line)
+            match = re.match(r'^([0-9a-fA-F]{64})\\s{2}(.+)$', line)
             if not match:
                 fail(f'Manifest line không hợp lệ: {line}')
                 continue

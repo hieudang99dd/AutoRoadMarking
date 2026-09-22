@@ -45,6 +45,20 @@ namespace Autoroadmarking_Pro.CadHost.Commands
             return true;
         }
 
+        // Compatibility overload: giữ build ổn định nếu RoadMarkingCommands cũ
+        // vẫn gọi TryDequeue(out request). Request vẫn bị khóa theo active document.
+        public static bool TryDequeue(out QueuedCadRequest request)
+        {
+            Document? document = AcApp.DocumentManager.MdiActiveDocument;
+            if (document == null)
+            {
+                request = new QueuedCadRequest();
+                return false;
+            }
+
+            return TryDequeue(document, out request);
+        }
+
         public static bool TryDequeue(Document document, out QueuedCadRequest request)
         {
             if (document == null)

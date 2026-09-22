@@ -488,7 +488,7 @@
 <button data-step-index="2" onclick="window.setTab3CompactStep(2)">2. ĐA GIÁC VÀ XÉN</button>
 <button data-step-index="3" onclick="window.setTab3CompactStep(3)">3. VẠCH MÉP</button>
 <button data-step-index="4" onclick="window.setTab3CompactStep(4)">4. VẠCH 7.1/7.3</button>
-<button data-step-index="5" onclick="window.setTab3CompactStep(5)">5. VẠCH 1.2/2.2</button>
+<button data-step-index="5" onclick="window.setTab3CompactStep(5)">5. VẠCH TIẾP CẬN</button>
 </nav>
 <section class="t3-steps">
 <article class="t3-step" data-state="wait" id="pipeStep1">
@@ -555,15 +555,15 @@
 <footer class="t3-step-footer"><button class="pipe-btn-action btn-orange" id="btnStep4" onclick="window.goiAction('Step4_VeVachDungDiBo')">SINH VẠCH DỪNG VÀ ĐI BỘ</button></footer>
 </article>
 <article class="t3-step" data-state="wait" id="pipeStep5" style="display:none">
-<header class="t3-step-head"><span class="t3-step-no t3-n5">BƯỚC 5</span><h3>VẠCH TIẾP CẬN 1.2/2.2</h3><span class="status-pill status-wait" id="stepStatus5">Chờ</span></header>
+<header class="t3-step-head"><span class="t3-step-no t3-n5">BƯỚC 5</span><h3>VẠCH TIẾP CẬN TỚI NÚT</h3><span class="status-pill status-wait" id="stepStatus5">Chờ</span></header>
 <div class="t3-step-body">
 <div class="t3-step-section-title">Cấu hình</div>
 <div class="t3-config-box">
 <div class="field-stack"><label>Khoảng cách lùi từ vạch dừng (m)</label><div class="input-wrap"><input id="t3_approachDistance" min="1" step="1" type="number" value="20"/><span>m</span></div></div>
-<div class="field-stack"><label>Mã vạch (Template)</label><select class="layer-select" id="t3_approachCode"><option value="1.2">Vạch 1.2 (Nét liền)</option><option value="2.2" selected>Vạch 2.2 (Nét liền)</option></select></div>
+<div class="field-stack"><label>Mã vạch (Template)</label><select class="layer-select" id="t3_approachCode"><option value="1.1">Vạch 1.1 (Tim đường - Nét liền)</option><option value="1.2">Vạch 1.2 (Tim đường - Nét đứt)</option><option value="2.1" selected>Vạch 2.1 (Phân làn - Nét liền)</option><option value="2.2">Vạch 2.2 (Phân làn - Nét đứt)</option></select></div>
 </div>
 </div>
-<footer class="t3-step-footer"><button class="pipe-btn-action btn-info" id="btnStep5" onclick="window.goiAction('Step5_VeVachTiepCan')">BỐ TRÍ VẠCH 1.2/2.2</button></footer>
+<footer class="t3-step-footer"><button class="pipe-btn-action btn-info" id="btnStep5" onclick="window.goiAction('Step5_VeVachTiepCan')">BỐ TRÍ VẠCH TIẾP CẬN</button></footer>
 </article>
 </section>
 <section class="t3-bottom">

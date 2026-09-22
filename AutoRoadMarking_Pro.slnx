@@ -6,6 +6,7 @@
   <Project Path="Autoroadmarking_Pro.Application/Autoroadmarking_Pro.Application.csproj">
     <Platform Solution="Debug|x64" Project="x64" />
   </Project>
+  <Project Path="Autoroadmarking_Pro.Application.Tests/Autoroadmarking_Pro.Application.Tests.csproj" />
   <Project Path="Autoroadmarking_Pro.CadHost/Autoroadmarking_Pro.CadHost.csproj">
     <Platform Solution="Debug|x64" Project="x64" />
   </Project>

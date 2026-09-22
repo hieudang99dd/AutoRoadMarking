@@ -296,7 +296,7 @@ def main() -> int:
             line = line.strip()
             if not line:
                 continue
-            match = re.match(r'^([0-9a-fA-F]{64})\\s{2}(.+)$', line)
+            match = re.match(r'^([0-9a-fA-F]{64})\s{2}(.+)$', line)
             if not match:
                 fail(f'Manifest line không hợp lệ: {line}')
                 continue

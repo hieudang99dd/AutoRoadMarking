@@ -306,7 +306,7 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                         template.Layer,
                         template.Width,
                         plan.StartStation,
-                        plan.EndStation);
+                        offset);
 
                     _mapper.BindAxis(meta, plan.AxisInfo);
                     meta.CadLayer = segment.Layer;

@@ -6,6 +6,7 @@ import re
 import sys
 import csv
 import json
+import hashlib
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -188,9 +189,12 @@ def main() -> int:
             fail('CadLinetypeService chưa xử lý đầy đủ CUSTOM_REAL/geometry-driven.')
 
     stop_cross = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'StopCrosswalkGenerator.cs').read_text(encoding='utf-8')
-    for token in ('CreateCrosswalkZebra', 'PEDESTRIAN_CROSSWALK_ZEBRA', '["PaintRatio"] = "1"'):
+    for token in ('CreateCrosswalkZebra', 'PEDESTRIAN_CROSSWALK_ZEBRA', '["PaintRatio"] = "1"',
+                  'STEP2_POLYGON_AXIS_INTERSECTION', 'double crosswalkAnchorStation = boundaryStation;'):
         if token not in stop_cross:
             fail(f'Generator 7.3 thiếu {token}.')
+    if 'ResolveBullhornEndStation(' in stop_cross:
+        fail('Generator 7.3 vẫn còn heuristic ResolveBullhornEndStation trong source.')
 
     longitudinal = (ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'LongitudinalMarkingGenerator.cs').read_text(encoding='utf-8')
     if 'DUPLICATE_ON_CROSS_SECTION' not in longitudinal or 'RequiresDoublePresentation' not in longitudinal:
@@ -258,6 +262,91 @@ def main() -> int:
         fail('UI Tab 2 chưa gọi backend action SyncSelectedCrossSections thật.')
     if 'ActiveCrossSectionIds' not in state_text or 'GetEffectiveCrossSections' not in state_text:
         fail('State chưa lưu tập MCN đồng bộ/hoạt động cho Tab 2→3/4.')
+
+    # Step 5: UI code/description phải khớp template và backend không silent-clamp station.
+    expected_step5_labels = (
+        'value="1.1">Vạch 1.1 (Tim đường - Nét đứt)',
+        'value="1.2">Vạch 1.2 (Tim đường - Nét liền)',
+        'value="2.1" selected>Vạch 2.1 (Phân làn - Nét đứt)',
+        'value="2.2">Vạch 2.2 (Phân làn - Nét liền)',
+    )
+    for token in expected_step5_labels:
+        if token not in html:
+            fail(f'Step 5 UI sai/thiếu nhãn: {token}')
+
+    approach_generator_path = ROOT / 'Autoroadmarking_Pro.CadHost' / 'Cad' / 'Markings' / 'BatchApproachLaneGenerator.cs'
+    if not approach_generator_path.exists():
+        fail('Thiếu BatchApproachLaneGenerator.cs.')
+    else:
+        approach_generator = approach_generator_path.read_text(encoding='utf-8')
+        if 'startStation = Math.Max(axisStart, startStation)' in approach_generator or \
+           'endStation = Math.Min(axisEnd, endStation)' in approach_generator:
+            fail('Step 5 vẫn silent-clamp candidate vào miền RoadAxis.')
+        for token in ('"1.1", "1.2", "2.1", "2.2"', 'RequestedDistance', 'AnchorStopLineRecordId'):
+            if token not in approach_generator:
+                fail(f'Step 5 thiếu contract/metadata {token}.')
+
+    # SOURCE_MANIFEST.sha256 phải phản ánh đúng source hiện tại.
+    manifest_path = ROOT / 'SOURCE_MANIFEST.sha256'
+    if not manifest_path.exists():
+        fail('Thiếu SOURCE_MANIFEST.sha256.')
+    else:
+        manifest_entries = {}
+        for line in manifest_path.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            match = re.match(r'^([0-9a-fA-F]{64})\s{2}(.+)    if bad_dirs:
+        fail('Có build/cache directory trong source: ' + ', '.join(str(p.relative_to(ROOT)) for p in bad_dirs[:10]))
+
+    if ERRORS:
+        print('STATIC QA: FAIL')
+        for err in ERRORS:
+            print(' -', err)
+        return 1
+
+    print('STATIC QA: PASS')
+    print(f' - C# files: {len(cs_files)}')
+    print(f' - HTML ids: {len(parser.ids)} (unique)')
+    print(f' - Modular JS files: {len(js_files)}')
+    print(f' - WebView post actions: {len(posts)} (all handled)')
+    print(f' - goiAction aliases: {len(ui_alias_calls)} (all mapped)')
+    print(f' - Node syntax check: {"pass" if node else "skipped (node unavailable)"}')
+    print(' - Tab 1: typed pattern/reference separated from project metadata')
+    print(' - Tab 1: reserved metadata keys validated by backend policy + bundled CSV')
+    print(' - 7.1↔7.3: configurable, no hard maximum 3 m')
+    print(' - DWG state schema: 11')
+    print(' - build/cache directories: none')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+, line)
+            if not match:
+                fail(f'Manifest line không hợp lệ: {line}')
+                continue
+            manifest_entries[match.group(2)] = match.group(1).lower()
+
+        required_manifest_paths = (
+            'Autoroadmarking_Pro.CadHost/Cad/Markings/BatchApproachLaneGenerator.cs',
+            'Autoroadmarking_Pro.CadHost/UI/web/assets/css/tab2.css',
+            'Autoroadmarking_Pro.CadHost/UI/web/assets/css/tab2-management.css',
+            'Autoroadmarking_Pro.CadHost/UI/web/data/templates/ARM_CrossSections_LIBRARY_DEFAULT.json',
+            '.github/workflows/qa.yml',
+        )
+        for rel in required_manifest_paths:
+            if rel not in manifest_entries:
+                fail(f'Manifest thiếu file bắt buộc: {rel}')
+
+        for rel, expected_hash in manifest_entries.items():
+            target = ROOT / rel
+            if not target.exists() or not target.is_file():
+                fail(f'Manifest trỏ tới file không tồn tại: {rel}')
+                continue
+            actual_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+            if actual_hash != expected_hash:
+                fail(f'Manifest stale: {rel}')
 
     bad_dirs = [p for name in ('bin', 'obj', '.vs') for p in ROOT.rglob(name) if p.is_dir()]
     if bad_dirs:

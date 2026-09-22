@@ -576,34 +576,70 @@
 </section>
 <!-- TAB 4 -->
 <section aria-hidden="true" aria-labelledby="tabBtnKyHieuBlock" class="tab-content" id="tabKyHieuBlock" role="tabpanel">
-<div class="b4u-shell">
-<header class="b4u-topbar">
-<div class="b4u-heading">
+<div class="b4p-shell">
+
+<header class="b4p-header">
+<div class="b4p-heading">
 <div class="section-kicker">TAB 4 · VẠCH 7.6 / 9.3</div>
-<div class="b4u-title">Bố trí 7.6 / 9.3 theo tuyến và mặt cắt</div>
+<div class="b4p-title">Bố trí ký hiệu theo pipeline dữ liệu → Block → cấu hình → duyệt → sinh CAD</div>
+<div class="b4p-subtitle">Tab 4 chỉ sử dụng MCN đã đồng bộ ở Tab 2 và mốc 7.1/7.3 đã sinh ở Tab 3.</div>
 </div>
-<div class="b4u-roadbar b4u-roadbar-project">
-<div class="b4u-project-context">
-<strong>PHẠM VI PHÂN TÍCH</strong>
-<span>Toàn bộ các tuyến sử dụng MCN đại diện đã cấu hình</span>
-</div>
+<div class="b4p-header-actions">
 <span class="status-pill status-wait" id="b4CadStatus">Chờ dữ liệu</span>
-<button class="btn-primary" id="b4AnalyzeBtn" onclick="window.analyzeSymbolPlacement()">PHÂN TÍCH BỐ TRÍ 7.6 / 9.3</button>
+<button class="btn-outline" onclick="window.refreshSymbolPlacementWorkspace()">ĐỌC LẠI DỮ LIỆU</button>
 </div>
 </header>
 
-<section class="b4u-readiness" aria-label="Dữ liệu đầu vào">
-<div class="b4u-ready-title"><strong>DỮ LIỆU ĐẦU VÀO</strong><span id="b4DataStatus">Chưa đủ dữ liệu</span></div>
-<div class="b4u-ready-item"><span>MCN</span><strong id="b4AssemblyCount">0</strong></div>
-<div class="b4u-ready-item"><span>TIM</span><strong id="b4SourceAxisCount">—</strong></div>
-<div class="b4u-ready-item"><span>Mốc 7.1</span><strong id="b4Source71Count">0</strong></div>
-<div class="b4u-ready-item"><span>Mốc 7.3</span><strong id="b4Source73Count">0</strong></div>
-<div class="b4u-ready-item library"><span>Ký hiệu CAD</span><strong id="b4BlockReady">0</strong></div>
+<nav class="b4p-flow" aria-label="Pipeline Tab 4">
+<div class="b4p-flow-step source"><span>1</span><div><strong>DỮ LIỆU NGUỒN</strong><small>MCN · TIM · 7.1 · 7.3</small></div></div>
+<div class="b4p-flow-arrow">→</div>
+<div class="b4p-flow-step block"><span>2</span><div><strong>NGUỒN BLOCK</strong><small>Thư mục DWG 7.6 / 9.3</small></div></div>
+<div class="b4p-flow-arrow">→</div>
+<div class="b4p-flow-step config"><span>3</span><div><strong>CẤU HÌNH</strong><small>Từng làn + quy tắc</small></div></div>
+<div class="b4p-flow-arrow">→</div>
+<div class="b4p-flow-step analyze"><span>4</span><div><strong>PHÂN TÍCH &amp; DUYỆT</strong><small>Proposal trước khi ghi CAD</small></div></div>
+<div class="b4p-flow-arrow">→</div>
+<div class="b4p-flow-step commit"><span>5</span><div><strong>SINH CAD</strong><small>Tạo / cập nhật vị trí đã chọn</small></div></div>
+</nav>
+
+<section class="b4p-prerequisites">
+<article class="b4p-stage b4p-source-stage">
+<header class="b4p-stage-head">
+<div><span class="b4p-step-no">1</span><div><strong>DỮ LIỆU NGUỒN TỪ TAB 2 / TAB 3</strong><small>Kiểm tra dữ liệu hình học trước khi cấu hình bố trí.</small></div></div>
+<span id="b4DataStatus">Chưa đủ dữ liệu</span>
+</header>
+<div class="b4p-source-grid">
+<div class="b4p-source-item"><span>MCN đã đồng bộ</span><strong id="b4AssemblyCount">0</strong></div>
+<div class="b4p-source-item"><span>TIM tuyến</span><strong id="b4SourceAxisCount">—</strong></div>
+<div class="b4p-source-item"><span>Mốc 7.1</span><strong id="b4Source71Count">0</strong></div>
+<div class="b4p-source-item"><span>Mốc 7.3</span><strong id="b4Source73Count">0</strong></div>
+<div class="b4p-source-item"><span>Nút giao</span><strong id="b4NodeCount">—</strong></div>
+<div class="b4p-source-item"><span>Nhánh xét</span><strong id="b4ApproachCount">—</strong></div>
+</div>
+</article>
+
+<article class="b4p-stage b4p-block-stage" id="b4LibraryPanel">
+<header class="b4p-stage-head">
+<div><span class="b4p-step-no">2</span><div><strong>NGUỒN BLOCK 7.6 / 9.3</strong><small id="b4LibraryStatus">Chưa quét thư viện.</small></div></div>
+<div class="b4p-block-ready"><span>Ký hiệu nhận dạng</span><strong id="b4BlockReady">0</strong></div>
+</header>
+<div class="b4p-block-body">
+<label class="b4-label" for="b4LibraryPath">Thư mục chứa các file Block DWG</label>
+<div class="b4p-block-path">
+<input id="b4LibraryPath" placeholder="D:\\AUTO_ROAD_MARKING\\BLOCK_LIBRARY" readonly type="text"/>
+<button class="btn-outline" onclick="window.selectSymbolLibraryFolder()">CHỌN THƯ MỤC...</button>
+<button class="btn-primary" onclick="window.scanSymbolBlockLibrary()">QUÉT THƯ VIỆN</button>
+</div>
+<div class="b4p-block-note">Nguồn này được dùng khi sinh/cập nhật BlockReference. Hãy quét lại khi thêm, đổi tên hoặc thay file DWG.</div>
+</div>
+</article>
 </section>
 
-<section class="b4u-workspace">
-<section class="b4-panel b4-profile b4u-profile">
-<header class="b4-panel-head"><div><strong>CẤU HÌNH THEO MẶT CẮT</strong><small>Cấu hình trực tiếp 7.6 và mũi tên 9.3 cho từng làn vào nút / thoát nút.</small></div></header>
+<section class="b4p-config">
+<section class="b4-panel b4-profile b4p-profile">
+<header class="b4-panel-head b4p-numbered-head">
+<div><span class="b4p-step-no">3</span><div><strong>CẤU HÌNH THEO MẶT CẮT</strong><small>Bật 7.6 và chọn loại mũi tên 9.3 cho từng làn vào / thoát nút.</small></div></div>
+</header>
 <div class="b4-profile-toolbar">
 <select id="b4AssemblyProfileSelect" onchange="window.changeTab4AssemblyProfile(this.value)">
 <option value="">Chọn mặt cắt từ Tab 2...</option>
@@ -621,7 +657,6 @@
 <div><span>Nhóm làn B</span><strong id="b4ProfileGroupB">—</strong></div>
 <div><span>Cấu kiện giữa</span><strong id="b4ProfileMedian">—</strong></div>
 </div>
-
 <div class="b4-lane-workspace" id="b4CustomConfigPanel">
 <section class="b4-lane-group">
 <header class="b4-lane-group-head"><strong>LÀN VÀO NÚT · INBOUND</strong><span id="b4InboundProfileCount">0 làn</span></header>
@@ -635,18 +670,20 @@
 </div>
 <footer class="b4-profile-foot">
 <div>MCN: <strong id="b4CurrentProfileName">Chưa có</strong> · Dùng bởi <strong id="b4ProfileAppliedRoads">0 tuyến / nhánh</strong></div>
-<div class="b4-profile-foot-actions"><button class="btn-outline" id="b4ResetProfileBtn" onclick="window.resetTab4AssemblyProfile()">KHÔI PHỤC</button><button class="btn-primary" id="b4SaveProfileBtn" onclick="window.saveTab4AssemblyProfile()">LƯU CẤU HÌNH MCN</button></div>
+<div class="b4-profile-foot-actions">
+<button class="btn-outline" id="b4ResetProfileBtn" onclick="window.resetTab4AssemblyProfile()">KHÔI PHỤC</button>
+<button class="btn-primary" id="b4SaveProfileBtn" onclick="window.saveTab4AssemblyProfile()">LƯU CẤU HÌNH MCN</button>
+</div>
 </footer>
 </section>
 
-<aside class="b4u-settings">
-<section class="b4-panel b4-rules b4u-rules">
-<header class="b4-panel-head"><div><strong>QUY TẮC KHOẢNG CÁCH</strong><small>Chỉ các tham số dự án cần tùy biến.</small></div></header>
+<aside class="b4-panel b4-rules b4p-rules">
+<header class="b4-panel-head"><div><strong>QUY TẮC KHOẢNG CÁCH</strong><small>Áp dụng sau cấu hình theo làn; lưu riêng cho DWG.</small></div></header>
 <div class="b4-panel-body b4-rule-stack">
 <section class="b4-rule-section cyan">
 <div class="b4-rule-head"><span class="b4-rule-code cyan">7.6</span><div><strong>VẠCH CẢNH BÁO</strong></div></div>
 <div class="b4-form-row"><label>7.6 cách vạch 7.3</label><div class="b4-number"><input id="b4Distance76" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="30"/><span>m</span></div></div>
-<label class="b4-check-row"><input checked id="b4InboundOnly76" type="checkbox"/><span>Chỉ các làn đã bật 7.6</span></label>
+<label class="b4-check-row"><input checked id="b4InboundOnly76" onchange="window.updateSymbolRules()" type="checkbox"/><span>Chỉ bố trí 7.6 trên làn vào nút</span></label>
 </section>
 <section class="b4-rule-section violet">
 <div class="b4-rule-head"><span class="b4-rule-code violet">9.3 IN</span><div><strong>MŨI TÊN TRƯỚC NÚT</strong></div></div>
@@ -658,108 +695,64 @@
 <section class="b4-rule-section green">
 <div class="b4-rule-head"><span class="b4-rule-code green">9.3 OUT</span><div><strong>MŨI TÊN SAU NÚT</strong></div></div>
 <div class="b4-form-row"><label>9.3 cách vạch 7.3</label><div class="b4-number"><input id="b4OutDistance93" min="0" onchange="window.updateSymbolRules()" step="1" type="number" value="15"/><span>m</span></div></div>
-<label class="b4-check-row"><input checked id="b4Rotate93" type="checkbox"/><span>Xoay theo hướng xe chạy</span></label>
+<label class="b4-check-row"><input checked id="b4Rotate93" onchange="window.updateSymbolRules()" type="checkbox"/><span>Xoay theo hướng xe chạy</span></label>
 </section>
-<div class="b4-global-actions"><button class="btn-outline" onclick="window.resetSymbolPlacementRules()">KHÔI PHỤC</button><button class="btn-primary" onclick="window.saveSymbolPlacementDefaults()">LƯU QUY TẮC</button></div>
+<div class="b4-global-actions">
+<span class="b4-dirty" hidden id="b4RulesDirty">● QUY TẮC CHƯA LƯU</span>
+<button class="btn-outline" onclick="window.resetSymbolPlacementRules()">KHÔI PHỤC</button>
+<button class="btn-primary" onclick="window.saveSymbolPlacementDefaults()">LƯU QUY TẮC</button>
 </div>
-</section>
-
-<details class="b4-panel b4u-library" id="b4LibraryPanel">
-<summary><div><strong>THƯ VIỆN KÝ HIỆU CAD 7.6 / 9.3</strong><small id="b4LibraryStatus">Chưa quét thư viện.</small></div><span>▾</span></summary>
-<div class="b4-panel-body">
-<label class="b4-label">Đường dẫn thư viện</label>
-<div class="b4-folder-row"><input id="b4LibraryPath" placeholder="D:\\AUTO_ROAD_MARKING\\BLOCK_LIBRARY" readonly type="text"/><button class="btn-outline" onclick="window.selectSymbolLibraryFolder()">CHỌN...</button></div>
-<div class="b4-folder-actions"><button class="btn-primary" onclick="window.scanSymbolBlockLibrary()">QUÉT THƯ VIỆN</button><button class="btn-outline" onclick="window.refreshSymbolBlockLibrary()">LÀM MỚI</button></div>
 </div>
-</details>
 </aside>
 </section>
 
-<section class="b4u-results b4-panel">
-<header class="b4u-results-head">
-<div class="b4u-result-heading">
-<strong>DUYỆT KẾT QUẢ BỐ TRÍ</strong>
+<section class="b4p-review b4-panel">
+<header class="b4p-review-head">
+<div class="b4p-review-title">
+<span class="b4p-step-no">4</span>
+<div>
+<strong>PHÂN TÍCH &amp; DUYỆT KẾT QUẢ</strong>
 <small id="b4AnalysisState">Chưa phân tích dự án</small>
-<div class="b4u-analysis-meta">
-<span><strong id="b4NodeCount">—</strong> nút giao</span>
-<i>·</i>
-<span><strong id="b4ApproachCount">—</strong> nhánh được xét</span>
 </div>
 </div>
+<div class="b4p-review-actions">
 <div class="b4u-result-kpis">
 <div class="type76"><span>7.6</span><strong id="b4Count76">0</strong></div>
 <div class="type93"><span>9.3</span><strong id="b4Count93">0</strong></div>
 <div class="warn"><span>Cần kiểm tra</span><strong id="b4WarningCount">0</strong></div>
 <div class="selected"><span>Đã chọn</span><strong id="b4SelectedCount">0</strong></div>
 </div>
+<button class="btn-primary" id="b4AnalyzeBtn" onclick="window.analyzeSymbolPlacement()">PHÂN TÍCH BỐ TRÍ 7.6 / 9.3</button>
+</div>
 </header>
 
 <div class="b4u-result-toolbar">
 <div class="b4-result-filters">
 <span class="b4u-toolbar-label">BỘ LỌC</span>
-<select id="b4ResultRoad" onchange="window.renderSymbolProposals()">
-<option value="all">Tất cả tuyến</option>
-</select>
-<select id="b4ResultType" onchange="window.renderSymbolProposals()">
-<option value="all">Tất cả loại</option>
-<option value="7.6">7.6</option>
-<option value="9.3">9.3</option>
-</select>
-<select id="b4ResultStatus" onchange="window.renderSymbolProposals()">
-<option value="all">Tất cả trạng thái</option>
-<option value="valid">HỢP LỆ</option>
-<option value="warning">CẦN KIỂM TRA</option>
-<option value="override">ĐÃ CHỈNH</option>
-<option value="generated">ĐÃ TẠO</option>
-</select>
+<select id="b4ResultRoad" onchange="window.renderSymbolProposals()"><option value="all">Tất cả tuyến</option></select>
+<select id="b4ResultType" onchange="window.renderSymbolProposals()"><option value="all">Tất cả loại</option><option value="7.6">7.6</option><option value="9.3">9.3</option></select>
+<select id="b4ResultStatus" onchange="window.renderSymbolProposals()"><option value="all">Tất cả trạng thái</option><option value="valid">HỢP LỆ</option><option value="warning">CẦN KIỂM TRA</option><option value="override">ĐÃ CHỈNH</option><option value="generated">ĐÃ TẠO</option></select>
 </div>
 <div class="b4u-selection-actions">
 <button class="btn-outline" onclick="window.selectAllSymbolProposals(true)">CHỌN TẤT CẢ ĐANG LỌC</button>
-<button class="btn-outline" onclick="window.selectAllSymbolProposals(false)">BỎ CHỌN</button>
+<button class="btn-outline" onclick="window.selectAllSymbolProposals(false)">BỎ CHỌN ĐANG LỌC</button>
 </div>
 </div>
 
 <div class="b4-table-wrap b4u-table-wrap">
 <table class="arm-colgroup-table b4-table b4u-table">
 <colgroup>
-<col style="width:34px"/>
-<col style="width:190px"/>
-<col style="width:78px"/>
-<col style="width:108px"/>
-<col style="width:92px"/>
-<col style="width:58px"/>
-<col style="width:116px"/>
-<col style="width:70px"/>
-<col style="width:92px"/>
-<col style="width:94px"/>
-<col style="width:108px"/>
-<col style="width:54px"/>
-<col style="width:48px"/>
+<col style="width:34px"/><col style="width:190px"/><col style="width:78px"/><col style="width:108px"/><col style="width:92px"/><col style="width:58px"/><col style="width:116px"/><col style="width:70px"/><col style="width:92px"/><col style="width:94px"/><col style="width:108px"/><col style="width:54px"/><col style="width:48px"/>
 </colgroup>
-<thead>
-<tr>
-<th>#</th>
-<th>Tuyến / Nút</th>
-<th>Nhánh</th>
-<th>Chiều tiếp cận</th>
-<th>Làn áp dụng</th>
-<th>Loại</th>
-<th>Hướng mũi tên</th>
-<th>Mốc TC</th>
-<th>KC mốc (m)</th>
-<th>Lý trình</th>
-<th>Trạng thái</th>
-<th data-no-sort="true">Zoom</th>
-<th data-no-sort="true">Chọn</th>
-</tr>
-</thead>
-<tbody id="b4PlacementBody">
-<tr><td class="b4-empty-cell" colspan="13">Cấu hình MCN đại diện và bấm PHÂN TÍCH BỐ TRÍ 7.6 / 9.3.</td></tr>
-</tbody>
+<thead><tr>
+<th>#</th><th>Tuyến / Nút</th><th>Nhánh</th><th>Chiều tiếp cận</th><th>Làn áp dụng</th><th>Loại</th><th>Hướng mũi tên</th><th>Mốc TC</th><th>KC mốc (m)</th><th>Lý trình</th><th>Trạng thái</th><th data-no-sort="true">Zoom</th><th data-no-sort="true">Chọn</th>
+</tr></thead>
+<tbody id="b4PlacementBody"><tr><td class="b4-empty-cell" colspan="13">Hoàn tất bước 1–3 rồi bấm PHÂN TÍCH BỐ TRÍ 7.6 / 9.3.</td></tr></tbody>
 </table>
 </div>
 
-<footer class="b4u-review-footer">
+<footer class="b4p-commit">
+<div class="b4p-commit-title"><span class="b4p-step-no">5</span><div><strong>SINH / CẬP NHẬT BLOCK TRÊN CAD</strong><small>Chỉ ghi các proposal đã được chọn sau khi duyệt.</small></div></div>
 <div class="b4u-review-summary">
 <span id="b4ProposalCount">0 vị trí</span>
 <span>Đã tạo: <strong id="b4GeneratedFooterCount">0</strong></span>
@@ -779,6 +772,7 @@
 <input id="b4CrosswalkOffset73" type="number" value="0"/><input id="b4StopOffset71" type="number" value="0"/><select id="b4Anchor76"><option value="73">7.3</option></select>
 <input checked id="b4Rotate76" type="checkbox"/><input checked id="b4AutoMovement93" type="checkbox"/><input checked id="b4EnableOut93" type="checkbox"/>
 </div>
+
 </div>
 </section>
 <!-- TAB 5 -->

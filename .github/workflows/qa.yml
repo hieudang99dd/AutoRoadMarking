@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   static-qa:
@@ -26,5 +26,21 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Regenerate source manifest
+        run: python tools/update-manifest.py
+
       - name: Run static QA
         run: python tools/qa-static.py
+
+      - name: Commit refreshed manifest
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- SOURCE_MANIFEST.sha256; then
+            echo "Manifest already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add SOURCE_MANIFEST.sha256
+          git commit -m "chore: refresh source manifest [skip ci]"
+          git push

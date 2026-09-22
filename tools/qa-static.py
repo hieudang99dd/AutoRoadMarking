@@ -302,16 +302,24 @@ def main() -> int:
                 continue
             manifest_entries[match.group(2)] = match.group(1).lower()
 
-        required_manifest_paths = (
-            'Autoroadmarking_Pro.CadHost/Cad/Markings/BatchApproachLaneGenerator.cs',
-            'Autoroadmarking_Pro.CadHost/UI/web/assets/css/tab2.css',
-            'Autoroadmarking_Pro.CadHost/UI/web/assets/css/tab2-management.css',
-            'Autoroadmarking_Pro.CadHost/UI/web/data/templates/ARM_CrossSections_LIBRARY_DEFAULT.json',
-            '.github/workflows/qa.yml',
-        )
-        for rel in required_manifest_paths:
-            if rel not in manifest_entries:
-                fail(f'Manifest thiếu file bắt buộc: {rel}')
+        try:
+            tracked_raw = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT)
+            tracked_files = {
+                p for p in tracked_raw.decode('utf-8').split('\\0')
+                if p and p != 'SOURCE_MANIFEST.sha256'
+                and not any(part in {'.git', '.vs', 'bin', 'obj'} for part in Path(p).parts)
+            }
+        except Exception as exc:
+            tracked_files = set()
+            fail(f'Không đọc được danh sách git tracked files: {exc}')
+
+        manifest_files = set(manifest_entries)
+        missing_manifest = sorted(tracked_files - manifest_files)
+        extra_manifest = sorted(manifest_files - tracked_files)
+        if missing_manifest:
+            fail('Manifest thiếu tracked files: ' + ', '.join(missing_manifest[:20]))
+        if extra_manifest:
+            fail('Manifest có file không còn tracked: ' + ', '.join(extra_manifest[:20]))
 
         for rel, expected_hash in manifest_entries.items():
             target = ROOT / rel

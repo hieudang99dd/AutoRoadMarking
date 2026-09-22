@@ -305,7 +305,7 @@ def main() -> int:
         try:
             tracked_raw = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT)
             tracked_files = {
-                p for p in tracked_raw.decode('utf-8').split('\\0')
+                p for p in tracked_raw.decode('utf-8').split('\0')
                 if p and p != 'SOURCE_MANIFEST.sha256'
                 and not any(part in {'.git', '.vs', 'bin', 'obj'} for part in Path(p).parts)
             }

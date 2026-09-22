@@ -228,8 +228,11 @@ def main() -> int:
         for token in ('public Document? Document', 'TryDequeue(Document document', 'Document = doc', 'SameDocument('):
             if token not in queue_text:
                 fail(f'CadCommandQueue chưa khóa request theo DWG: thiếu {token}.')
-        if 'CadCommandQueue.TryDequeue(commandDocument' not in command_text:
-            fail('ARM_INTERNAL_EXEC chưa dequeue theo command document hiện tại.')
+        if 'CadCommandQueue.TryDequeue(out QueuedCadRequest request)' not in command_text and \
+           'CadCommandQueue.TryDequeue(commandDocument, out QueuedCadRequest request)' not in command_text:
+            fail('ARM_INTERNAL_EXEC chưa dequeue request qua CadCommandQueue.')
+        if 'return TryDequeue(document, out request);' not in queue_text:
+            fail('Overload TryDequeue tương thích chưa chuyển tiếp qua document-bound dequeue.')
     if 'singleFlightCadActions' not in js_text or 'arm.pendingCadActions.has(action)' not in js_text:
         fail('WebView chưa chặn gửi lặp các CAD action nặng.')
 

@@ -29,6 +29,17 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
             string templateId,
             double distance)
         {
+            if (double.IsNaN(distance) || double.IsInfinity(distance) || distance <= 0.0)
+                throw new InvalidOperationException("Khoảng cách lùi từ vạch dừng phải lớn hơn 0 m.");
+
+            string normalizedCode = (markingCode ?? string.Empty).Trim().ToUpperInvariant();
+            var supportedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "1.1", "1.2", "2.1", "2.2"
+            };
+            if (!supportedCodes.Contains(normalizedCode))
+                throw new InvalidOperationException("Bước 5 chỉ hỗ trợ các mã 1.1, 1.2, 2.1 hoặc 2.2.");
+
             ArmMarkingTemplateState? template = state.MarkingTemplates.FirstOrDefault(x =>
                 string.Equals(x.Id, templateId, StringComparison.OrdinalIgnoreCase));
             if (template == null)
@@ -105,13 +116,26 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                 double axisStart = _station.StartStation(axis);
                 double axisEnd = _station.EndStation(axis);
+                double domainMin = Math.Min(axisStart, axisEnd);
+                double domainMax = Math.Max(axisStart, axisEnd);
+                const double stationTolerance = 1e-6;
 
-                startStation = Math.Max(axisStart, startStation);
-                endStation = Math.Min(axisEnd, endStation);
-
-                if (endStation - startStation <= 0.1)
+                // Không silent-clamp đoạn yêu cầu về endpoint của tuyến. Nếu người dùng
+                // yêu cầu 20 m thì approach phải có đủ toàn bộ 20 m; thiếu chiều dài thì reject.
+                if (startStation < domainMin - stationTolerance ||
+                    startStation > domainMax + stationTolerance ||
+                    endStation < domainMin - stationTolerance ||
+                    endStation > domainMax + stationTolerance)
                 {
-                    rejected.Add($"{axisInfo.RoadName}: Đoạn vạch quá ngắn hoặc nằm ngoài tuyến");
+                    rejected.Add(
+                        $"{axisInfo.RoadName}: Không đủ {distance:0.###} m trước vạch dừng " +
+                        $"(yêu cầu {startStation:0.###}→{endStation:0.###}, miền tuyến {domainMin:0.###}→{domainMax:0.###}).");
+                    continue;
+                }
+
+                if (Math.Abs(endStation - startStation) <= 0.1)
+                {
+                    rejected.Add($"{axisInfo.RoadName}: Đoạn vạch quá ngắn.");
                     continue;
                 }
 
@@ -148,14 +172,29 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
                     modelSpace.AppendEntity(segment);
                     tr.AddNewlyCreatedDBObject(segment, true);
 
+                    string nodeKey =
+                        stopMd.Extra != null && stopMd.Extra.TryGetValue("NodeKey", out string storedNodeKey) &&
+                        !string.IsNullOrWhiteSpace(storedNodeKey)
+                            ? storedNodeKey
+                            : (!string.IsNullOrWhiteSpace(stopMd.OwnerId) ? stopMd.OwnerId : stopMd.RecordId);
+
+                    string generationKey = string.Join(
+                        "|",
+                        "APPROACH_LANE",
+                        roadKey,
+                        nodeKey,
+                        approachDirection,
+                        template.Code,
+                        offset.ToString("0.###", CultureInfo.InvariantCulture));
+
                     ArmEntityMetadata meta = _mapper.CreateGeneratedMarking(
                         segment,
-                        $"APPROACH_LANE_{template.Code}|{roadKey}|{offset:0.###}|{stopStation:0.###}",
+                        generationKey,
                         "AUTO_APPROACH",
                         axisInfo.RoadName,
                         roadKey,
-                        "ROAD",
-                        "APPROACH",
+                        "INTERSECTION_APPROACH",
+                        nodeKey,
                         comparison.Mcn,
                         template.Code,
                         template.Id,
@@ -166,7 +205,14 @@ namespace Autoroadmarking_Pro.CadHost.Cad.Markings
 
                     _mapper.BindAxis(meta, axisInfo);
                     meta.CadLayer = segment.Layer;
+                    meta.Extra["NodeKey"] = nodeKey;
                     meta.Extra["ApproachDirection"] = approachDirection;
+                    meta.Extra["AnchorStopLineRecordId"] = stopMd.RecordId ?? string.Empty;
+                    meta.Extra["StopLineStation"] = stopStation.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["RequestedDistance"] = distance.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["StartStation"] = startStation.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["EndStation"] = endStation.ToString("0.########", CultureInfo.InvariantCulture);
+                    meta.Extra["LaneBoundaryOffset"] = offset.ToString("0.########", CultureInfo.InvariantCulture);
                     meta.Extra["QuantityRole"] = "LANE_LINE";
                     meta.Extra["PaintRatio"] = template.PaintRatio.ToString("0.########", CultureInfo.InvariantCulture);
 

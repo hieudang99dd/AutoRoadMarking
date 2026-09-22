@@ -456,31 +456,33 @@
 <button class="btn-outline btn-context-info btn-refresh-pipeline" onclick="window.goiAction('Refresh_Pipeline_Status')">↻ LÀM MỚI DỮ LIỆU</button>
 </div>
 </section>
+<style>
+#tabVach2D .t3-source-row { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+#tabVach2D .t3-source-card { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; padding: 6px 8px !important; min-height: 40px; }
+#tabVach2D .t3-source-title { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
+#tabVach2D .t3-source-title > div { font-size: 10px; color: var(--text-muted); }
+#tabVach2D .t3-source-title strong { font-size: 11px; color: #fff; }
+#tabVach2D .t3-source-title b { color: #1ee985; font-size: 12px; }
+#tabVach2D .pipe-btn-action, #tabVach2D .btn-reload-library { padding: 4px 8px !important; font-size: 10px !important; min-height: 24px; }
+@media (max-width: 1200px) { #tabVach2D .t3-source-row { grid-template-columns: repeat(2, 1fr) !important; } }
+</style>
 <section class="t3-source-row">
 <article class="t3-source-card tim">
-<div class="t3-source-title"><div><strong>Chọn đường TIM</strong></div><span class="status-pill status-wait" id="statusTim">Chưa chọn</span></div>
-<div class="t3-source-count"><b id="txtCountTim">0</b> tuyến đã chọn</div>
+<div class="t3-source-title"><div><strong>Đường TIM:</strong> <b id="txtCountTim">0</b></div><span class="status-pill status-wait" id="statusTim">Chưa chọn</span></div>
 <button class="pipe-btn-action btn-purple" onclick="window.chonTimTuCAD()">CHỌN TỪ CAD</button>
 </article>
 <article class="t3-source-card edge">
-<div class="t3-source-title"><div><strong>Chọn đường MÉP</strong></div><span class="status-pill status-wait" id="statusMep">Chưa chọn</span></div>
-<div class="t3-source-count"><b id="txtCountMep">0</b> đường mép đã chọn</div>
+<div class="t3-source-title"><div><strong>Đường MÉP:</strong> <b id="txtCountMep">0</b></div><span class="status-pill status-wait" id="statusMep">Chưa chọn</span></div>
 <button class="pipe-btn-action btn-info" onclick="window.chonMepTuCAD()">CHỌN TỪ CAD</button>
 </article>
 <article class="t3-source-card component">
-<div class="t3-source-title"><div><strong>Chọn MÉP CẤU KIỆN</strong></div><span class="status-pill status-wait" id="statusMepCauKien">Chưa chọn</span></div>
-<div class="t3-source-count"><b id="txtCountMepCauKien">0</b> đường mép đã chọn</div>
+<div class="t3-source-title"><div><strong>CẤU KIỆN:</strong> <b id="txtCountMepCauKien">0</b></div><span class="status-pill status-wait" id="statusMepCauKien">Chưa chọn</span></div>
 <button class="pipe-btn-action btn-cyan" onclick="window.chonMepCauKienTuCAD()">CHỌN TỪ CAD</button>
 </article>
 <article class="t3-source-card overview">
-<div class="t3-source-title"><div><strong>Thông tin tổng quan</strong></div><span class="status-pill status-wait" id="statusAssembly">Chưa đồng bộ</span></div>
-<div class="t3-overview">
-<div class="t3-overview-row"><span>Thư viện mặt cắt</span><strong><span id="t3_daGan">0</span> mặt cắt sẵn sàng</strong></div>
-<div class="t3-overview-row"><span>Tổng số tuyến TIM</span><strong id="t3_tongTim">0</strong></div>
-<div class="t3-overview-row"><span>Tổng số đường MÉP</span><strong id="t3_tongMep">0</strong></div>
-<div class="t3-overview-row"><span>Tổng số MÉP CẤU KIỆN</span><strong id="t3_tongMepCauKien">0</strong></div>
-</div>
-<button class="btn-outline btn-context-info btn-reload-library" onclick="window.dongBoThuVienTab3()">NẠP LẠI THƯ VIỆN</button>
+<div class="t3-source-title"><div><strong>Thư viện:</strong> <b id="t3_daGan">0</b> sẵn sàng</div><span class="status-pill status-wait" id="statusAssembly">Chưa đồng bộ</span></div>
+<button class="btn-outline btn-context-info btn-reload-library" onclick="window.dongBoThuVienTab3()">NẠP LẠI</button>
+<div style="display:none"><span id="t3_tongTim">0</span><span id="t3_tongMep">0</span><span id="t3_tongMepCauKien">0</span></div>
 </article>
 </section>
 <nav aria-label="Chọn bước xử lý" class="t3-compact-stepbar" id="t3CompactStepbar">

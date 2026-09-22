@@ -64,8 +64,8 @@ namespace Autoroadmarking_Pro.CadHost.Cad.State
         public double BlockOutboundDistance93 { get; set; } = 15.0;
         public bool BlockRotateWithTraffic { get; set; } = true;
 
-        // Tab 3 - khoảng cách vạch dừng 7.1 đến mép vạch đi bộ 7.3. Đây là
-        // tham số thiết kế tùy biến theo dự án; không áp trần cứng 3 m.
+        // Tab 3 - khoảng cách TIM vạch 7.3 đến TIM vạch dừng 7.1.
+        // Đây là tham số thiết kế tùy biến theo dự án; không áp trần cứng 3 m.
         public double StopToCrosswalkDistance { get; set; } = 2.0;
 
         // Tab 6 - chỉ dùng để thông báo snapshot đã cũ. Khối lượng thật luôn được đọc

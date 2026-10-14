@@ -1,5 +1,10 @@
 <Solution>
   <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <BuildType Name="C3D2024" />
+    <BuildType Name="C3D2025" />
+    <BuildType Name="C3D2026" />
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
@@ -15,4 +20,12 @@
   <Project Path="Autoroadmarking_Pro.Infrastructure/Autoroadmarking_Pro.Infrastructure.csproj">
     <Platform Solution="Debug|x64" Project="x64" />
   </Project>
+  <Folder Name="/Build Helpers/">
+    <File Path="build-2024.cmd" />
+    <File Path="build-2025.cmd" />
+    <File Path="build-2026.cmd" />
+    <File Path="build-all.cmd" />
+    <File Path="build-all.ps1" />
+    <File Path="build-release.ps1" />
+  </Folder>
 </Solution>

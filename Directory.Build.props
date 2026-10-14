@@ -1,6 +1,7 @@
 <Project>
   <!-- Selected in Visual Studio's Solution Configuration dropdown. Explicit -p:Civil3DVersion wins. -->
   <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Configurations>Debug;Release;C3D2024;C3D2025;C3D2026</Configurations>
 
     <Civil3DVersion Condition="'$(Civil3DVersion)' == '' and '$(Configuration)' == 'C3D2024'">2024</Civil3DVersion>

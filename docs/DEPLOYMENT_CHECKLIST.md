@@ -10,6 +10,14 @@
 
 ## B. Build
 
+**Visual Studio**: chọn solution configuration `C3D2024` / `C3D2025` / `C3D2026`, platform `x64` rồi **Build Solution**. `Release` không kèm phiên bản mặc định trỏ C3D2024. Build tất cả: chạy `build-all.cmd` hoặc `./build-all.ps1`.
+
+- [ ] Xác nhận đang dùng đúng Solution Configuration, không chỉ chọn `Release`.
+- [ ] Sau Build 2025/2026, xác nhận **đúng tên DLL và thư mục phiên bản**.
+- [ ] Build All: kiểm tra summary; bản thiếu Autodesk reference phải được báo FAIL (không được báo thành công giả).
+- [ ] Không copy DLL 2024 sang thư mục 2025 và đổi tên (khác runtime/API).
+
+
 ```powershell
 ./build-release.ps1 -Civil3DVersion 2026 -Configuration Release
 ```

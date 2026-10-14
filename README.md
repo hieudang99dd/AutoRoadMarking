@@ -97,6 +97,30 @@ Migration hiện xử lý tối thiểu:
 - ép `QuantityMethod=GENERATED` cho 7.3/GGT;
 - dọn `ActiveCrossSectionIds` mồ côi.
 
+## Chọn phiên bản Civil 3D ngay trong Visual Studio
+
+Mở `AutoRoadMarking_Pro.slnx` bằng Visual Studio có hỗ trợ `.slnx` (bao gồm Visual Studio 2026). Trên thanh **Solution Configurations**, chọn một trong ba cấu hình mới và nền tảng **x64**, rồi dùng **Build > Build Solution**:
+
+| Solution Configuration | Civil 3D | Runtime | DLL đầu ra |
+|---|---|---|---|
+| `C3D2024` | 2024 | .NET Framework 4.8 | `Autoroadmarking_Pro.CadHost/bin/Release/C3D2024/Autoroadmarking_Pro.CadHost.C3D2024.dll` |
+| `C3D2025` | 2025 | .NET 8 Windows | `Autoroadmarking_Pro.CadHost/bin/Release/C3D2025/Autoroadmarking_Pro.CadHost.C3D2025.dll` |
+| `C3D2026` | 2026 | .NET 8 Windows | `Autoroadmarking_Pro.CadHost/bin/Release/C3D2026/Autoroadmarking_Pro.CadHost.C3D2026.dll` |
+
+**Build All**: chạy `build-all.cmd` trên Windows hoặc chạy `./build-all.ps1` từ terminal tại thư mục gốc. Ba phiên bản được build **tuần tự**, mỗi phiên bản phải có Autodesk reference chính xác. Các script `build-2024.cmd`, `build-2025.cmd`, `build-2026.cmd`, `build-all.cmd` cũng xuất hiện dưới **Build Helpers** trong Solution Explorer. Có thể gán `build-all.cmd` vào **Tools > External Tools** để kích hoạt ngay trong Visual Studio.
+
+Lưu ý: `Debug` / `Release` cũ trong Visual Studio **vẫn mặc định dùng C3D2024** nếu bạn không đặt `Civil3DVersion` riêng. Do đó để build DLL 2025, phải chọn rõ `C3D2025` thay vì `Release` thông thường. `Directory.Build.props` giải quyết mapping này mà không phải sửa `.csproj` mỗi lần.
+
+Ví dụ qua PowerShell:
+
+```powershell
+./build-all.ps1
+./build-all.ps1 -Versions 2025,2026
+./build-release.ps1 -Civil3DVersion 2025 -Configuration Release
+```
+
+Bắt buộc có .NET SDK, Autodesk Civil 3D managed assemblies đúng version; workflow QA chạy trên GitHub **chỉ kiểm tra tĩnh**, không chứng nhận build/NETLOAD CAD thật. Xem `docs/BUILD_MULTIVERSION.md` để cấu hình External Tools, đường dẫn DLL và xử lý lỗi.
+
 ## Build
 
 ### Civil 3D 2024

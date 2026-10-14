@@ -1,0 +1,26 @@
+<Project>
+  <!-- Selected in Visual Studio's Solution Configuration dropdown. Explicit -p:Civil3DVersion wins. -->
+  <PropertyGroup>
+    <Configurations>Debug;Release;C3D2024;C3D2025;C3D2026</Configurations>
+
+    <Civil3DVersion Condition="'$(Civil3DVersion)' == '' and '$(Configuration)' == 'C3D2024'">2024</Civil3DVersion>
+    <Civil3DVersion Condition="'$(Civil3DVersion)' == '' and '$(Configuration)' == 'C3D2025'">2025</Civil3DVersion>
+    <Civil3DVersion Condition="'$(Civil3DVersion)' == '' and '$(Configuration)' == 'C3D2026'">2026</Civil3DVersion>
+    <!-- Backward compatibility for Visual Studio Debug / Release without an explicit version. -->
+    <Civil3DVersion Condition="'$(Civil3DVersion)' == ''">2024</Civil3DVersion>
+
+    <!-- Custom C3D configurations produce release binaries in the same paths as build-release.ps1. -->
+    <ArmOutputConfiguration Condition="'$(Configuration)' == 'C3D2024' or '$(Configuration)' == 'C3D2025' or '$(Configuration)' == 'C3D2026'">Release</ArmOutputConfiguration>
+    <ArmOutputConfiguration Condition="'$(ArmOutputConfiguration)' == ''">$(Configuration)</ArmOutputConfiguration>
+
+    <!-- Isolate NuGet assets and intermediate builds for 2025/2026 (same net8.0-windows TFM). -->
+    <BaseIntermediateOutputPath>obj\C3D$(Civil3DVersion)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- SDK's built-in Release optimizations are not automatically used for custom configurations. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'C3D2024' or '$(Configuration)' == 'C3D2025' or '$(Configuration)' == 'C3D2026'">
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
+</Project>

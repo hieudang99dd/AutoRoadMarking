@@ -121,6 +121,10 @@ Ví dụ qua PowerShell:
 
 Bắt buộc có .NET SDK, Autodesk Civil 3D managed assemblies đúng version; workflow QA chạy trên GitHub **chỉ kiểm tra tĩnh**, không chứng nhận build/NETLOAD CAD thật. Xem `docs/BUILD_MULTIVERSION.md` để cấu hình External Tools, đường dẫn DLL và xử lý lỗi.
 
+## UI regression: Tab 3 source cards
+
+Lỗi nhãn/khung trạng thái tràn ra khỏi card TIM/MÉP/CẤU KIỆN/Thư viện đã được xử lý bằng `UI/web/assets/css/tab3-source-layout.css`: container queries theo chiều rộng thực của panel Civil 3D, card co giãn/wrap và hỗ trợ WebView2 cũ. Kiểm tra tĩnh: `python tools/qa-tab3-source-layout.py`. Ghi nhận chi tiết: `docs/TAB3_OVERFLOW_FIX.md`.
+
 ## Build
 
 ### Civil 3D 2024

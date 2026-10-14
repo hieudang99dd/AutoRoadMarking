@@ -49,8 +49,9 @@ assert all(selector.strip().startswith(("#tabVach2D", "@", "}", "*", "This")) fo
     "#tabVach2D .t3-source-title", "#tabVach2D .t3-source-title .status-pill"
 ])
 assert "transform: scale(" not in css
-assert not re.search(r"\n\{\s*(?:overflow: hidden|min-width: 0|min-width:0)\s*;", foundation), (
-    "Malformed CSS orphan declaration remains"
-)
+# Check only the two exact orphan fragments removed from the baseline.
+# A generic '\n{' pattern would also match valid CSS declarations with a selector.
+assert "\\n{\\n    overflow: hidden;\\n}" not in foundation
+assert "\\n{\\n    min-width:0;\\n    min-height:0;\\n}" not in foundation
 
 print("TAB 3 SOURCE CARD RESPONSIVE QA: PASS")

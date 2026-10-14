@@ -29,6 +29,9 @@ jobs:
       - name: Regenerate source manifest
         run: python tools/update-manifest.py
 
+      - name: Verify multi-version build profiles
+        run: python tools/verify-build-profiles.py
+
       - name: Run static QA
         run: python tools/qa-static.py
 

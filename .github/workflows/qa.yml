@@ -32,6 +32,9 @@ jobs:
       - name: Verify multi-version build profiles
         run: python tools/verify-build-profiles.py
 
+      - name: Verify Tab 3 responsive source cards
+        run: python tools/qa-tab3-source-layout.py
+
       - name: Run static QA
         run: python tools/qa-static.py
 

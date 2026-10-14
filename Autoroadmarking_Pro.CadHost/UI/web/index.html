@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="./assets/css/tab1-management.css"/>
 <link rel="stylesheet" href="./assets/css/tab1-shared.css"/>
 <link rel="stylesheet" href="./assets/css/tab2.css"/>
+<link rel="stylesheet" href="./assets/css/tab3-source-layout.css"/>
 </head>
 <body>
 <div id="toast-container"></div>
@@ -456,16 +457,7 @@
 <button class="btn-outline btn-context-info btn-refresh-pipeline" onclick="window.goiAction('Refresh_Pipeline_Status')">↻ LÀM MỚI DỮ LIỆU</button>
 </div>
 </section>
-<style>
-#tabVach2D .t3-source-row { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
-#tabVach2D .t3-source-card { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; padding: 6px 8px !important; min-height: 40px; }
-#tabVach2D .t3-source-title { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
-#tabVach2D .t3-source-title > div { font-size: 10px; color: var(--text-muted); }
-#tabVach2D .t3-source-title strong { font-size: 11px; color: #fff; }
-#tabVach2D .t3-source-title b { color: #1ee985; font-size: 12px; }
-#tabVach2D .pipe-btn-action, #tabVach2D .btn-reload-library { padding: 4px 8px !important; font-size: 10px !important; min-height: 24px; }
-@media (max-width: 1200px) { #tabVach2D .t3-source-row { grid-template-columns: repeat(2, 1fr) !important; } }
-</style>
+<!-- TAB 3 SOURCE CARDS: responsive rules live in assets/css/tab3-source-layout.css -->
 <section class="t3-source-row">
 <article class="t3-source-card tim">
 <div class="t3-source-title"><div><strong>Đường TIM:</strong> <b id="txtCountTim">0</b></div><span class="status-pill status-wait" id="statusTim">Chưa chọn</span></div>

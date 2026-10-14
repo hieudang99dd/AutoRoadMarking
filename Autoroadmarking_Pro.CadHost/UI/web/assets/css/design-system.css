@@ -116,7 +116,7 @@ table.arm-colgroup-table td button,table.arm-stable-table td button{
 /* 8 · TAB 3: retain the four-step dashboard layout used as the scale reference. */
 .tab-content{overflow:hidden}
 .t3-dashboard{height:100%;min-height:0;grid-template-rows:auto auto minmax(0,1fr) auto!important;gap:var(--arm-gap-md);overflow:hidden!important}
-.t3-source-row{grid-template-columns:1fr 1fr 1fr 1.35fr!important;gap:var(--arm-gap-md)}
+/* Tab 3 source-row grid lives in tab3-source-layout.css (container responsive). */
 .t3-steps{grid-template-columns:1.12fr .94fr .94fr 1.02fr!important;gap:var(--arm-gap-md);min-height:0}
 .t3-step{min-height:0}
 .t3-step-body{overflow:auto}

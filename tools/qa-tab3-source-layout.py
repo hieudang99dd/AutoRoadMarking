@@ -51,7 +51,7 @@ assert all(selector.strip().startswith(("#tabVach2D", "@", "}", "*", "This")) fo
 assert "transform: scale(" not in css
 # Check only the two exact orphan fragments removed from the baseline.
 # A generic '\n{' pattern would also match valid CSS declarations with a selector.
-assert "\\n{\\n    overflow: hidden;\\n}" not in foundation
-assert "\\n{\\n    min-width:0;\\n    min-height:0;\\n}" not in foundation
+assert "\n{\n    overflow: hidden;\n}" not in foundation
+assert "\n{\n    min-width:0;\n    min-height:0;\n}" not in foundation
 
 print("TAB 3 SOURCE CARD RESPONSIVE QA: PASS")

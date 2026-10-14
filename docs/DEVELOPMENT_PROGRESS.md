@@ -8,16 +8,16 @@
 - Inline `<style>` trong `UI/web/index.html` ép `repeat(4,1fr)!important` và bố cục nội dung ngang trên mọi panel.
 - `design-system.css` cũng ép bốn cột; breakpoint chỉ quan sát viewport thay vì chiều rộng thực của WebView2.
 - Flex child/badge và nút có `white-space:nowrap`, `height` cố định nên không thể co/xuống hàng trong card hẹp.
-- `foundation.css` có hai khối `{ ... }` không có selector, làm CSS không hợp lệ.
+- `foundation.css` có bốn khối `{ ... }` không có selector, làm CSS không hợp lệ.
 
 **Sửa đổi đã triển khai**:
 - Bỏ `<style>` nội tuyến ở Tab 3; load `assets/css/tab3-source-layout.css` sau tất cả stylesheet còn lại.
 - Dùng CSS container query trên `.t3-dashboard`: 4 cột khi rộng, 2 cột khi ≤1350px và 1 cột khi ≤710px **theo chiều rộng thực của panel**; fallback cho WebView2 cũ.
 - Card flex wrap, text/badge/button được wrap mà không cắt nội dung; trạng thái tự tăng chiều cao khi cần.
-- Xóa cấu hình nguồn bốn cột chồng chéo trong design-system và hai orphan blocks của foundation.
+- Xóa cấu hình nguồn bốn cột chồng chéo trong design-system và bốn orphan blocks của foundation.
 - Thêm `tools/qa-tab3-source-layout.py` vào GitHub Actions; xem `docs/TAB3_OVERFLOW_FIX.md`.
 
-**Kiểm thử**: 36 trường hợp Chromium headless trong fixture bốn card (12 kích thước 290–1740px × 100/125/150% zoom), kiểm tra box geometry của chữ/badge/nút không vượt card: **PASS**. Static CI: cần kiểm tra run. Kiểm thử plugin WebView2/NETLOAD trên Civil 3D thực tế **PENDING**.
+**Kiểm thử**: 42 trường hợp Chromium headless trong fixture bốn card (14 kích thước 210–1740px × 100/125/150% zoom), kiểm tra box geometry của chữ/badge/nút không vượt card: **PASS**. Static CI: cần kiểm tra run. Kiểm thử plugin WebView2/NETLOAD trên Civil 3D thực tế **PENDING**.
 
 **Phạm vi**: chỉ HTML/CSS bố cục Tab 3, không thay đổi thuật toán CAD, metadata, bridge hay các Tab 0/1/2/4/5/6.
 

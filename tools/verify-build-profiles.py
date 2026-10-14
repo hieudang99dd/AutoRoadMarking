@@ -21,9 +21,9 @@ rules = props.findall("./PropertyGroup/Civil3DVersion")
 for name, version in expected.items():
     assert any(name in el.attrib.get("Condition", "") and el.text == version for el in rules), name
 assert any(el.text == "2024" and el.attrib.get("Condition") == "'$(Civil3DVersion)' == ''" for el in rules)
-assert props.findtext("./PropertyGroup/BaseIntermediateOutputPath") == r"obj\C3D$(Civil3DVersion)\"
+assert props.findtext("./PropertyGroup/BaseIntermediateOutputPath").replace(chr(92), "/") == "obj/C3D$(Civil3DVersion)/"
 assert any(el.tag == "Optimize" and el.text == "true" for group in props for el in group)
-assert host.findtext("./PropertyGroup/OutputPath") == r"bin\$(ArmOutputConfiguration)\C3D$(Civil3DVersion)\"
+assert host.findtext("./PropertyGroup/OutputPath").replace(chr(92), "/") == "bin/$(ArmOutputConfiguration)/C3D$(Civil3DVersion)/"
 assert "net48" in read("Autoroadmarking_Pro.CadHost/Autoroadmarking_Pro.CadHost.csproj")
 assert "net8.0-windows" in read("Autoroadmarking_Pro.CadHost/Autoroadmarking_Pro.CadHost.csproj")
 

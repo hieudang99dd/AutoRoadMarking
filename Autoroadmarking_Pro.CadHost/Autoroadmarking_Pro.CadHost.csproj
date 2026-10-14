@@ -24,7 +24,7 @@
     <RootNamespace>Autoroadmarking_Pro.CadHost</RootNamespace>
     <AssemblyName>Autoroadmarking_Pro.CadHost.C3D$(Civil3DVersion)</AssemblyName>
 
-    <OutputPath>bin\$(Configuration)\C3D$(Civil3DVersion)\</OutputPath>
+    <OutputPath>bin\$(ArmOutputConfiguration)\C3D$(Civil3DVersion)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
     <Deterministic>true</Deterministic>
